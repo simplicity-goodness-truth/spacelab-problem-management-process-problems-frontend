@@ -1,0 +1,239 @@
+<mvc:View
+    controllerName="zslpmprprb.controller.Object"
+    xmlns="sap.m"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns:semantic="sap.f.semantic"
+    xmlns:upload="sap.m.upload"
+    xmlns:core="sap.ui.core">
+
+    <semantic:SemanticPage
+        id="detailPage"
+        headerPinnable="false"
+        toggleHeaderOnTitleClick="false"
+        busy="{objectView>/busy}"
+        busyIndicatorDelay="{objectView>/delay}"
+        showFooter="true">
+
+		<semantic:titleHeading>
+            <Title text="{ObjectId}: {Description}" id="fieldTitle" />
+		</semantic:titleHeading>
+        <semantic:headerContent>
+
+                <Table class="noColumnBorder" id="headerParameters" inset="false" width="50%">
+                    <columns>
+                        <Column id="headerParameterLabel" width="20%" />
+                        <Column id="headerParameterValue" width="50%" />
+                    </columns>
+                    <items>
+                        <ColumnListItem id="headerParameterStatusItemDynamic" visible="{= ${runtimeModel>/editModeActive} ? true: false }">
+                            <cells>
+                                <Text text="{i18n>problemStatusTitle}" />        
+                            </cells>
+                            <cells>
+                                <Select id="headerStatusSelect" width="100%"   
+                                showSecondaryValues="true"  items="{path: 'AvailableStatuses'}"
+                                  selectedKey="{Status}">
+                                  <core:Item key="{Code}" text="{Text}" />
+                              </Select>    
+                                
+                                </cells>
+                        </ColumnListItem>
+                        <ColumnListItem id="headerParameterStatusItemStatic" visible="{= ${runtimeModel>/editModeActive} ? false: true }">
+                            <cells>
+                                <Text text="{i18n>problemStatusTitle}" />        
+                            </cells>
+                            <cells>
+                                <Text text="{StatusText}"  />        
+                                
+                                </cells>
+
+                        </ColumnListItem>
+
+                        <ColumnListItem id="headerParameterProcessorItemDynamic" visible="{= ${runtimeModel>/editModeActive} ? true: false }">
+                            <cells>
+                                <Text text="{i18n>problemProcessorFullNameTitle}" />        
+                            </cells>
+                            <cells>
+                                <Input id="headerProcessorSelect" width="100%" value="{ProcessorFullName}"                 
+                                visible="{= ${runtimeModel>/editModeActive} ? true: false }" showValueHelp="true" 
+                                valueHelpOnly="true" valueHelpRequest="onheaderProcessorSelectValueHelpPress" />
+                                
+                                </cells>
+                        </ColumnListItem>
+                        <ColumnListItem id="headerParameterStatusProcessorStatic" visible="{= ${runtimeModel>/editModeActive} ? false: true }">
+                            <cells>
+                                <Text text="{i18n>problemProcessorFullNameTitle}" />        
+                            </cells>
+                            <cells>
+                                <Text text="{ProcessorFullName}"  />        
+                                
+                                </cells>
+
+                        </ColumnListItem>      
+                        <ColumnListItem id="headerParameterStatusPriorityStatic">
+                            <cells>
+                                <Text text="{i18n>problemPriorityTitle}" />        
+                            </cells>
+                            <cells>
+                                <Text text="{PriorityText}"  />        
+                                
+                                </cells>
+
+                        </ColumnListItem>
+                    </items>
+                </Table>
+
+        </semantic:headerContent>
+        <semantic:content>
+        <IconTabBar id="iconTabBar">
+            <items>
+
+                <IconTabFilter id="tabCommunication" icon="sap-icon://comment" tooltip="{i18n>communicationIconTabBarText}" text="{i18n>communicationIconTabBarText}">
+                    <content>
+                        
+                        <Text text="{AvailableStatuses/Code}" visible="{= ${runtimeModel>/editModeActive} ? true: false }"/>   
+                      <VBox>
+                      <TextArea id="communicationTabTextInputArea" value="" width="100%" rows="15" visible="{= ${runtimeModel>/editModeActive} ? true: false }"/>
+                        <List id="textsList" showSeparators="Inner" busyIndicatorDelay="0" items="{path: 'Text'}">
+                            <FeedListItem id="communicationItem" iconDensityAware="false" showIcon="false" info="{UserText}" timestamp="{DateTimeText}" text="{TextString}" sender="{TdidTxt}" />
+                        </List>
+                    </VBox>
+                    </content>
+                </IconTabFilter>
+              
+                <IconTabFilter id="tabAttachments" icon="sap-icon://attachment" tooltip="{i18n>attachmentsIconTabBarText}" text="{i18n>attachmentsIconTabBarText}">
+                    <content>
+                        <upload:UploadSet
+                            id="UploadSet"
+                            instantUpload="false"
+                            showIcons="true"
+                            uploadEnabled="{= ${runtimeModel>/editModeActive} ? true: false }"
+                            terminationEnabled="true"
+                            fileTypes="jpeg,csv,txt,doc,png,docx,xlsx,jpg,pdf"
+                            maxFileNameLength="255"
+                            maxFileSize="10"
+                            mediaTypes="application/pdf,text/plain,application/msword,image/png,text/csv,text/html,application/zip,image/jpeg"
+                            items="{Attachment}"
+                            beforeUploadStarts="onBeforeUploadStarts"
+                            uploadCompleted="onUploadCompleted"
+                            afterItemAdded="onAfterItemAdded"
+                            noDataDescription="{i18n>noAttachmentsDescription}"
+                            noDataText="{i18n>noAttachmentsText}">
+                            <upload:toolbar>
+                                <OverflowToolbar id="OverflowToolbar">
+                                    <ToolbarSpacer id="ToolbarSpacer" />
+                                </OverflowToolbar>
+                            </upload:toolbar>
+                            <upload:items>
+                                <upload:UploadSetItem id="UploadSetItem" fileName="{Name}" mediaType="{Mimetype}" url="{DocumentId}" visibleEdit="false" openPressed="onFileNamePress" removePressed="onAttachmentRemovalPress" />
+                            </upload:items>
+                        </upload:UploadSet>
+                    </content>
+                </IconTabFilter>
+
+                <IconTabFilter id="tabDetails" icon="sap-icon://business-card" tooltip="{i18n>detailIconTabBarText}" text="{i18n>detailIconTabBarText}">
+                    <content>
+                        <Table xmlns:mvc="sap.ui.core.mvc" xmlns:semantic="sap.m.semantic" xmlns:footerbar="sap.ushell.ui.footerbar" xmlns="sap.m" id="tableProblemDetails" inset="false">
+                            <columns>
+                                <Column id="tableProblemDetailsColumnLabel" width="30%" />
+                                <Column id="tableProblemDetailsColumnField" width="70%" />
+                            </columns>
+                            <items>
+                                <ColumnListItem id="tableProblemDetailsItemDescription">
+                                    <cells>
+                                        <Text text="{i18n>descriptionTitle}" width="100%" id="tableProblemDetailsLabelDescription" />
+                                        <Text text="{ path: 'Description'}" width="100%" id="tableProblemDetailsFieldDescription" />
+                                    </cells>
+                                </ColumnListItem>
+                                <ColumnListItem id="tableProblemDetailsItemCategory">
+                                    <cells>
+                                        <Text text="{i18n>categoryTitle}" width="100%" id="tableProblemDetailsLabelCatSchema" />
+                                        <HBox id="tableProblemDetailsItemCategoryHBox">
+                                            <Text text="{ path: 'CatSchemaName'}" width="100%" id="tableProblemDetailsFieldCatSchemaName" class="sapUiTinyMarginEnd" />
+                                            <Text text="/" width="100%" id="tableProblemDetailsSlash" class="sapUiTinyMarginEnd" />
+                                            <Text text="{ path: 'CatSchemaNodeName'}" width="100%" id="tableProblemDetailsFieldCatSchemaNodeName" />
+                                        </HBox>
+                                    </cells>
+                                </ColumnListItem>
+
+                                <ColumnListItem id="tableProblemDetailsItemPostingDate">
+                                    <cells>
+                                        <Text text="{i18n>postingDateTitle}" width="100%" id="tableProblemDetailsLabelPostingDate" />
+                                        <Text text="{ path: 'PostingDate', type: 'sap.ui.model.type.DateTime', formatOptions: { pattern: 'dd.MM.yyyy' }}" width="100%" id="tableProblemDetailsFieldPostingDate" />
+                                    </cells>
+                                </ColumnListItem>
+                                <ColumnListItem id="tableProblemDetailsItemCreationDate">
+                                    <cells>
+                                        <Text text="{i18n>creationDateTitle}" width="100%" id="tableProblemDetailsLabelCreationDate" />
+                                        <Text text="{CreatedAt}" width="100%" id="tableProblemDetailsFieldCreationDate" />
+                                    </cells>
+                                </ColumnListItem>
+                                <ColumnListItem id="tableProblemDetailsItemRequestorLogin">
+                                    <cells>
+                                        <Text text="{i18n>requesterBusinessPartnerTitle}" width="100%" id="tableProblemDetailsLabelRequestorBusinessPartner" />
+                                        <Text text="{RequestorBusinessPartner}" width="100%" id="tableProblemDetailsFieldRequestorBusinessPartner" />
+                                    </cells>
+                                </ColumnListItem>
+                                <ColumnListItem id="tableProblemDetailsItemRequestorName">
+                                    <cells>
+                                        <Text text="{i18n>requesterNameTitle}" width="100%" id="tableProblemDetailsLabelRequestorName" />
+                                        <Text text="{RequestorFullName}" width="100%" id="tableProblemDetailsFieldRequestorName" />
+                                    </cells>
+                                </ColumnListItem>
+                                <ColumnListItem id="tableProblemDetailsItemSLAIrtTimestamp">
+                                    <cells>
+                                        <Text text="{i18n>SLAIrtTimestamp}" width="100%" id="tableProblemDetailsLabelSLAIrtTimestamp" />
+                                        <Text text="{SLAIrtTimestamp}" width="100%" id="tableProblemDetailsFieldSLAIrtTimestamp" />
+                                    </cells>
+                                </ColumnListItem>
+                                <ColumnListItem id="tableProblemDetailsItemSLAIrtPerc">
+                                    <cells>
+                                        <Text text="{i18n>SLAIrtPerc}" width="100%" id="tableProblemDetailsLabelSLAIrtPerc" />
+                                        <HBox id="tableProblemDetailsItemSLAIrtHBox">
+                                            <core:Icon class="sapUiSmallMarginEnd" src="sap-icon://alert" color="#bd2106" visible="{= ${SLAIrtIconBsp} === 'OVERDUE' ? true : false }" tooltip="{i18n>SLAOverdue}" id="iconIrtSLAOverdue"/>
+                                            <core:Icon class="sapUiSmallMarginEnd" src="sap-icon://accept" color="#008000" visible="{= ${SLAIrtIconBsp} === 'NOTDUE' ? true : false }" tooltip="{i18n>SLANotDue}" id="iconIrtSLANotDue" />
+                                            <Text text="{SLAIrtPerc} %" width="100%" id="tableProblemDetailsFieldSLAIrtPerc" />
+                                        </HBox>
+                                    </cells>
+                                </ColumnListItem>
+
+                                <ColumnListItem id="tableProblemDetailsItemSLAMptTimestamp">
+                                    <cells>
+                                        <Text text="{i18n>SLAMptTimestamp}" width="100%" id="tableProblemDetailsLabelSLAMptTimestamp" />
+                                        <Text text="{SLAMptTimestamp}" width="100%" id="tableProblemDetailsFieldSLAMptTimestamp" />
+                                    </cells>
+                                </ColumnListItem>
+                                <ColumnListItem id="tableProblemDetailsItemSLAMptPerc">
+                                    <cells>
+                                        <Text text="{i18n>SLAMptPerc}" width="100%" id="tableProblemDetailsLabelSLAMptPerc" />
+                                        <HBox id="tableProblemDetailsItemSLAMptHBox">
+                                            <core:Icon class="sapUiSmallMarginEnd" src="sap-icon://alert" color="#bd2106" visible="{= ${SLAMptIconBsp} === 'OVERDUE' ? true : false }" tooltip="{i18n>SLAOverdue}" id="iconMptSLAOverdue"/>
+                                            <core:Icon class="sapUiSmallMarginEnd" src="sap-icon://accept" color="#008000" visible="{= ${SLAMptIconBsp} === 'NOTDUE' ? true : false }" tooltip="{i18n>SLANotDue}" id="iconMptSLANotDue" />
+                                            <Text text="{SLAMptPerc} %" width="100%" id="tableProblemDetailsFieldSLAMptPerc" />
+                                        </HBox>
+                                    </cells>
+                                </ColumnListItem>
+                            </items>
+                        </Table>
+                    </content>
+                </IconTabFilter>
+             
+            </items>
+        </IconTabBar>
+
+
+        </semantic:content>
+        
+        <semantic:titleCustomTextActions>            
+                
+          <Button text="{i18n>buttonProcessorEditMode}" press="onPressProcessorEditMode"  id="buttonProcessorEditMode" visible="{ProcessorEditModeEnabled}" />
+          <Button text="{i18n>buttonProcessorTakeOver}" press="onPressProcessorTakeOver" id="buttonProcessorTakeOver"   visible="{ProcessorTakeOverEnabled}"/>
+                
+        </semantic:titleCustomTextActions>
+        <semantic:footerCustomActions>
+            <Button text="{i18n>buttonSave}" press="onPressProcessorSave" id="buttonSave" />
+        </semantic:footerCustomActions>
+
+    </semantic:SemanticPage>
+
+</mvc:View>
