@@ -30,12 +30,46 @@ sap.ui.define([
                 t.getOwnerComponent().setModel(oExecutionContext, "executionContext");
             });
 
+            // Preparing additional models
+
+            this._getListOfProcessors(function() {
+
+                var oProcessorsList = new sap.ui.model.json.JSONModel({
+
+                    ProcessorsList: t.oProcessorsList
+
+                });
+
+                t.getOwnerComponent().setModel(oProcessorsList, "processorsList");
+
+            });
+
         },
 
         /* =========================================================== */
         /* begin: internal methods                                     */
         /* =========================================================== */
 
+        /**
+        * Get list of possible processors
+        */
+        _getListOfProcessors: function(callback) {
+
+            
+            var t = this,
+                sErroneousExecutionText = this.getResourceBundle().getText("oDataModelReadFailure");
+
+            sharedLibrary.readEntity("Processor", sErroneousExecutionText, this, false, false,  function (oData) {
+                    t.oProcessorsList = oData.results;                    
+                    return callback();
+                    
+            });
+
+        },
+
+        /**
+        * Get execution context
+        */
         _getExecutionContext: function (callback) {
 
             var t = this,

@@ -1,10 +1,53 @@
+// Constants classes
+
+const textTypes = Object.freeze(
+    class textTypes {
+        static reply = 'SU01';
+        static description = 'SU99';
+        static reproductionSteps = 'SURS';
+        static internalNote = 'SU04';
+        static solution = 'SUSO';
+        static businessConsequences = 'SUBI';
+    });
+
+const statusNames = Object.freeze(
+    class statusNames {
+        static new = 'E0001'
+        static approved = 'E0015';
+        static inProcess = 'E0002';
+        static customerAction = 'E0003';
+        static solutionProvided = 'E0005';
+        static confirmed = 'E0008';
+        static withdrawn = 'E0010';
+    });
+
+const textTypesForStatuses = Object.freeze(
+    class textTypesForStatuses {
+
+        static approved = 'SU01';
+        static customerAction = 'SU01';
+        static solutionProvided = 'SUSO';
+    });
+
+const statusesWithMandatoryTextComments = Object.freeze(
+    class statusesWithMandatoryTextComments {
+        static statuses = ['customerAction', 'solutionProvided', 'approved'];
+    });
+
+const statusesWithPossibleProccessorChange = Object.freeze(
+    class statusesWithPossibleProccessorChange {
+        static statuses = ['inProcess', 'new', 'approved'];
+    });
+
 sap.ui.define([
     "./BaseController",
     "sap/ui/model/json/JSONModel",
     "sap/ui/core/routing/History",
     "../model/formatter",
-    "../utils/sharedLibrary"
-], function (BaseController, JSONModel, History, formatter, sharedLibrary) {
+    "../utils/sharedLibrary",
+    "sap/ui/model/Filter",
+    "sap/ui/model/FilterOperator"
+], function (BaseController, JSONModel, History, formatter, sharedLibrary, Filter, FilterOperator) {
     "use strict";
 
     return BaseController.extend("zslpmprprb.controller.Object", {
@@ -51,18 +94,106 @@ sap.ui.define([
 
             this.oExecutionContext = oExecutionContext.oData;
 
+            // Getting processors list from App.controller
 
+            this.oProcessorsList = this.getOwnerComponent().getModel("processorsList");
 
+            this.selectedProcessor;
+
+            // Prepare empty models (which will be properly filled during a runtime)
+
+            this._prepareEmptyModels();
         },
         /* =========================================================== */
         /* event handlers                                              */
         /* =========================================================== */
 
         /**
+        * Processor pressed on a Return from Withdrawal button
+        */
+        onPressReturnFromWithdrawal: function (oEvent) {
+
+
+            this._returnFromWithdrawal();
+
+
+        },
+
+        /**
+        * Processor reset button pressed
+        */
+        onPressResetProcessor: function (oEvent) {
+
+            this._resetProcessor();
+
+
+        },
+
+        /**
+        * Prioirty selector changed
+        */
+        onChangePrioritySelect: function (oEvent) {
+
+        },
+
+        /**
+        * Status selector changed
+        */
+        onChangeStatusSelect: function (oEvent) {
+
+            this.byId("communicationTabTextInputArea").setValue("");
+            sharedLibrary.dropFieldState(this, "communicationTabTextInputArea");
+            this._setProcessorChangePossibility(oEvent.getSource().getSelectedKey());
+
+        },
+
+        /**
+        * Text area text entered
+        */
+        onChangeTextArea: function () {
+
+            sharedLibrary.dropFieldState(this, "communicationTabTextInputArea");
+
+        },
+
+        /**
+        * Processors search processing
+        */
+        onProcessorSearch: function (oEvent) {
+
+            var sValue = oEvent.getParameter("value"),
+                oFilter = [],
+                oBinding = oEvent.getParameter("itemsBinding");
+
+            oFilter.push(new Filter("FullName", FilterOperator.Contains, sValue));
+
+            oBinding.filter(oFilter);
+
+            // Additional search by search tags if no chance to find by name
+
+            if (oBinding.aIndices.length === 0) {
+
+                oFilter = [];
+
+                oFilter.push(new Filter("SearchTag1", FilterOperator.Contains, sValue));
+
+                oBinding.filter(oFilter);
+            }
+        },
+
+        /**
+        * Close processor search dialog
+        */
+        onProcessorSearchDialogClose: function (oEvent) {
+
+            this._setSelectedProcessor(oEvent);
+            this._destroyProcessorSearchDialog();
+        },
+
+        /**
         * Save button pressed
         */
         onPressProcessorSave: function () {
-
 
             this._executeProblemSave();
 
@@ -71,9 +202,9 @@ sap.ui.define([
         /**
         * Processor search value help pressed
         */
-        onheaderProcessorSelectValueHelpPress: function () {
+        onHeaderProcessorSelectValueHelpPress: function () {
 
-            this._openAssigneeSearchDialog();
+            this._openProcessorSearchDialog();
 
         },
 
@@ -129,8 +260,14 @@ sap.ui.define([
 
             this.Guid = sObjectGuid;
             this.ObjectId = sObjectId;
+            this.ProcessorFullName = oObject.ProcessorFullName;
+            this.Status = oObject.Status;
+            this.ProductGuid = oObject.ProductGuid;
+            this.Priority = oObject.Priority;
 
             this._setAvailableStatuses(oObject.Status);
+
+            this._setProcessorToValueFromEntitySet();
 
             oViewModel.setProperty("/busy", false);
 
@@ -146,6 +283,7 @@ sap.ui.define([
         */
         _onObjectMatched: function (oEvent) {
             var sObjectId = oEvent.getParameter("arguments").objectId;
+
             this._bindView("/ProblemSet" + sObjectId);
 
         },
@@ -153,7 +291,172 @@ sap.ui.define([
         /* internal methods                                            */
         /* =========================================================== */
 
+        /**
+        * Return a problem from Withdrawn to In Process
+        */
+        _returnFromWithdrawal: function () {
 
+            var sText = this.getResourceBundle().getText("confirmReturnFromWithdrawal"),
+                t = this,
+                oPayload = {};
+
+            oPayload.Status = statusNames.inProcess;
+
+            sharedLibrary.confirmAction(sText, function () {
+
+                sharedLibrary.updateEntityByEdmGuidKey(t.Guid, oPayload, "ProblemSet",
+                    null, t.getResourceBundle().getText("problemUpdateFailure"), null,
+                    t, function () {
+
+                        sap.m.MessageBox.information(t.getResourceBundle().getText("problemUpdatedSuccessfully", t.ObjectId));
+
+                        t._refreshApplicationAndSwitchOffEditMode();
+
+                    });
+
+            });
+
+
+        },
+
+        /**
+        * Prepare empty control models (it wiill be filled later in runtime)
+        */
+        _prepareEmptyModels: function () {
+
+            var oEmptyModel = new sap.ui.model.json.JSONModel({
+            });
+
+            this.byId("headerPrioritySelect").setModel(oEmptyModel);
+
+        },
+
+        /**
+        * Get list of priorities for a product
+        */
+        _setupAvailablePriorities: function () {
+
+            var t = this,
+                sErroneousExecutionText = this.getResourceBundle().getText("oDataModelReadFailure");
+
+            sharedLibrary.readEntitiesAssoiciationByEdmGuidKey("Product", this.ProductGuid, "Priority",
+                sErroneousExecutionText, this, false, false, function (oData) {
+
+                    t.oPrioritiesList = oData.results;
+
+                    // We need to recompile the array of priorities, so that a currently set prioirty is put to a first place
+
+                    var iCurrentPriorityPosition = t.oPrioritiesList.findIndex(obj => obj.Code === t.Priority),
+                        oCurrentPriorityObject = t.oPrioritiesList[iCurrentPriorityPosition];
+
+                    if (iCurrentPriorityPosition !== 0) {
+
+                        var oFirstElement = t.oPrioritiesList[0];
+                        t.oPrioritiesList[0] = oCurrentPriorityObject;
+                        t.oPrioritiesList[iCurrentPriorityPosition] = oFirstElement;
+                    }
+
+                    var oPrioritiesList = new sap.ui.model.json.JSONModel({
+
+                        PrioritiesList: t.oPrioritiesList
+
+                    });
+
+                    t.byId("headerPrioritySelect").setModel(oPrioritiesList);
+
+                    // If only one priority is available, then we prohibit disabling
+
+                    if (t.oPrioritiesList.length === 1) {
+                        t.byId("headerPrioritySelect").setProperty("enabled", false);
+                    } else {
+                        t.byId("headerPrioritySelect").setProperty("enabled", true);
+                    }
+
+                });
+        },
+
+        /**
+        * Set processor name to a bvalue from read entity set
+        */
+        _setProcessorToValueFromEntitySet: function () {
+
+            var oView = this.getView(),
+                oObject = oView.getBindingContext().getObject();
+
+            this.selectedProcessor = oObject.ProcessorBusinessPartner;
+            this.byId('headerProcessorSelect').setValue(oObject.ProcessorFullName);
+        },
+
+        /**
+        * Set possibility of processor change
+        */
+        _setProcessorChangePossibility: function (sStatusCode) {
+
+            var t = this,
+                bPossibility = false;
+
+            for (var key1 in statusNames) {
+
+                if (sStatusCode == statusNames[key1]) {
+
+                    if (statusesWithPossibleProccessorChange.statuses.includes(key1)) {
+
+                        bPossibility = true;
+
+                    }
+                }
+            }
+
+            t.byId("headerProcessorSelect").setProperty("enabled", bPossibility);
+            t.byId("buttonResetProcessor").setProperty("visible", bPossibility);
+
+
+            if (!bPossibility) {
+
+                this._setProcessorToValueFromEntitySet();
+
+            }
+
+        },
+
+        /**
+        * Set selected processor
+        */
+        _setSelectedProcessor: function (oEvent) {
+
+            var aContexts = oEvent.getParameter("selectedContexts"),
+                t = this;
+
+            // Something was selected
+
+            if (aContexts && aContexts.length) {
+
+                var selectedValue = aContexts.map(function (oContext) {
+                    return oContext.getObject().FullName;
+                }).join(", "),
+                    selectedCode = aContexts.map(function (oContext) {
+                        return oContext.getObject().BusinessPartner;
+                    }).join(", ");
+
+                // Setting values of a specified control and storing selected code
+
+                t.byId('headerProcessorSelect').setValue(selectedValue);
+
+                t.selectedProcessor = selectedCode;
+
+            }
+
+            oEvent.getSource().getBinding("items").filter([]);
+
+        },
+
+        /**
+        * Destroy processor search dialog
+        */
+        _destroyProcessorSearchDialog: function () {
+
+            this.oProcessorSearchFragment.destroy(true);
+        },
 
         /**
         * Switch edit mode
@@ -167,14 +470,56 @@ sap.ui.define([
 
             oRuntimeModel.setProperty("/editModeActive", !isEditModeActive);
 
-            // Save initial state of a problem before changes
+            // Actions when Edit mode has been switched on
 
             if (this._isEditModeActive()) {
 
-                this._saveProblemStateBeforeEdit();
+                // Reset text area input
+
+                sharedLibrary.dropFieldState(this, "communicationTabTextInputArea");
+                this.byId("communicationTabTextInputArea").setValue("");
+
+                // Reset status selector
+
+                this.byId("headerStatusSelect").setSelectedKey(this.Status);
+
+                // Reset processor selector
+
+                this.byId("headerProcessorSelect").setValue(this.ProcessorFullName);
+
+                // Save initial state of a problem before changes
+
+                this._storeProblemStateBeforeEdit();
+
+                //Set availability of processor change
+
+                this._setProcessorChangePossibility(this.Status);
+
+                //  Loading a list of priorities
+
+                this._setupAvailablePriorities();
 
             }
 
+        },
+
+        /**
+        * Creation of a problem text
+        */
+        _createProblemText: function (sGuid, sTextId, sText, callback) {
+
+            var oTextPayload = {};
+
+            oTextPayload.Tdid = sTextId;
+            oTextPayload.TextString = sText;
+
+            sharedLibrary.createSubEntity("ProblemSet", sGuid, "Text", oTextPayload,
+                null, this.getResourceBundle().getText("textCreationFailure"),
+                this, function () {
+
+                    return callback();
+
+                });
         },
 
         /**
@@ -189,7 +534,6 @@ sap.ui.define([
         /**
         * Refresh whole view
         */
-
         _refreshView: function () {
 
             this.getView().getElementBinding().refresh(true);
@@ -221,47 +565,82 @@ sap.ui.define([
         },
 
         /**
-        * Open assignee search dialog
+        * Open processor search dialog
         */
-        _openAssigneeSearchDialog: function () {
+        _openProcessorSearchDialog: function () {
 
-            var oAssigneeModel = this.changeRequestsUsersCollection;
 
-            this.oAssigneeSearchFragment = sap.ui.xmlfragment("zslpmprprb.view.AssigneeSearch", this);
+            this.oProcessorSearchFragment = sap.ui.xmlfragment("zslpmprprb.view.ProcessorSearch", this);
 
-            this.getView().addDependent(this.oAssigneeSearchFragment);
+            this.getView().addDependent(this.oProcessorSearchFragment);
 
-            this.oAssigneeSearchFragment.open();
+            this.oProcessorSearchFragment.open();
 
-            sap.ui.getCore().byId("assigneeSearchDialog").setModel(oAssigneeModel, "assigneeSearchModel");
+            sap.ui.getCore().byId("processorSearchDialog").setModel(this.oProcessorsList, "processorSearchModel");
 
         },
 
+        /**
+        * Execute problem save
+        */
         _executeProblemSave: function () {
 
             var oChangedFields = this._getChangedFields(),
-                t = this;
-
+                t = this,
+                sSelectedTextValue,
+                sFieldName,
+                bStatusHasBeenChanged = false,
+                oPayload = {},
+                oTextPayload = {},
+                sNewStatus;
 
             if (oChangedFields.length > 0) {
 
                 var sListOfChangedFields,
-                    sSaveConfirmationMessage =  t.getResourceBundle().getText("confirmProblemSavingWithChangedFields");
-
+                    sSaveConfirmationMessage = t.getResourceBundle().getText("confirmProblemSavingWithChangedFields");
 
                 for (var k = 0; k < oChangedFields.length; k++) {
-
 
                     var oChangedFieldsKeys = Object.keys(oChangedFields[k]);
 
                     for (var i = 0; i < oChangedFieldsKeys.length; i++) {
 
+                        // Text values of selected fields
+
+                        switch (oChangedFieldsKeys[i]) {
+                            case 'Status':
+
+                                sSelectedTextValue = t._getSelectedStatusText(oChangedFields[k][oChangedFieldsKeys[i]]);
+                                sFieldName = t.getResourceBundle().getText("problemStatusTitle");
+                                bStatusHasBeenChanged = true;
+                                sNewStatus = oChangedFields[k][oChangedFieldsKeys[i]];
+                                break;
+                            case 'ProcessorBusinessPartner':
+                                sSelectedTextValue = t._getSelectedProcessorFullName();
+                                sFieldName = t.getResourceBundle().getText("problemProcessorFullNameTitle");
+                                break;
+                            case 'Priority':
+                                sSelectedTextValue = t._getSelectedPriorityText(oChangedFields[k][oChangedFieldsKeys[i]]);
+                                sFieldName = t.getResourceBundle().getText("problemPriorityTitle");
+                                break;
+                            case 'Note':
+                                sSelectedTextValue = t._getTextFieldValue();
+                                sFieldName = t.getResourceBundle().getText(t._getTextTypeForStatus(sNewStatus) + "TextTitle");
+                                break;
+                            default:
+                                sSelectedTextValue = oChangedFields[k][oChangedFieldsKeys[i]];
+                                break;
+
+                        }
+
                         sListOfChangedFields =
-                            sListOfChangedFields ? 
-                                sListOfChangedFields +  oChangedFieldsKeys[i] + ":" + oChangedFields[k][oChangedFieldsKeys[i]] : oChangedFieldsKeys[i] + ":" + oChangedFields[k][oChangedFieldsKeys[i]];                
-                                sListOfChangedFields = sListOfChangedFields + "\n";
-                    
-                            }
+                            sListOfChangedFields ?
+                                sListOfChangedFields + sFieldName + ":" + " " + sSelectedTextValue : sFieldName + ":" + " " + sSelectedTextValue;
+                        sListOfChangedFields = sListOfChangedFields + "\n";
+
+                        oPayload[oChangedFieldsKeys[i]] = oChangedFields[k][oChangedFieldsKeys[i]];
+
+                    }
 
                 }
 
@@ -269,48 +648,200 @@ sap.ui.define([
 
                 sharedLibrary.confirmAction(sSaveConfirmationMessage, function () {
 
-                    t._saveProblem();
+                    var sText = t._getTextFieldValue();
+
+                    sharedLibrary.dropFieldState(t, "communicationTabTextInputArea");
+
+                    if (t._isTextMandatoryForStatus(oPayload.Status) && bStatusHasBeenChanged && (sText.length == '0')) {
+
+                        sharedLibrary.setFieldErrorState(t, "communicationTabTextInputArea");
+                        sap.m.MessageBox.error(t.getResourceBundle().getText("statusChangeTextNotEntered"));
+
+                    } else {
+
+                        // Determination of a text type
+
+                        oTextPayload.Tdid = t._getTextTypeForStatus(oPayload.Status);
+                        oTextPayload.TextString = sText;
+
+                        t._saveProblem(oPayload, oTextPayload);
+
+                    }
 
                 });
 
-            } else
-
-            {
+            } else {
 
                 sharedLibrary.informationAction(t.getResourceBundle().getText("noChangesWereMadeForProblem"),
-                function() {
+                    function () {
 
-                    return;
+                        sharedLibrary.dropFieldState(t, "communicationTabTextInputArea");
+                        return;
 
-                });
-            
+                    });
             }
-
-            // ZZZZZZZZZZZZZZZZZZZZZZ CHECK IF STATUS CHANGED THAN TEXT IS FIELD!!!!!
-              // ZZZZZZZZZZZZZZZZZZZZZZ CHECK IF STATUS CHANGED THAN TEXT IS FIELD!!!!!
-                // ZZZZZZZZZZZZZZZZZZZZZZ CHECK IF STATUS CHANGED THAN TEXT IS FIELD!!!!!
-                  // ZZZZZZZZZZZZZZZZZZZZZZ CHECK IF STATUS CHANGED THAN TEXT IS FIELD!!!!!
-                    // ZZZZZZZZZZZZZZZZZZZZZZ CHECK IF STATUS CHANGED THAN TEXT IS FIELD!!!!!
-                      // ZZZZZZZZZZZZZZZZZZZZZZ CHECK IF STATUS CHANGED THAN TEXT IS FIELD!!!!!
-
-                        // ZZZZZZZZZZZZZZZZZZZZZZ CHECK IF STATUS CHANGED THAN TEXT IS FIELD!!!!!
-                          // ZZZZZZZZZZZZZZZZZZZZZZ CHECK IF STATUS CHANGED THAN TEXT IS FIELD!!!!!
-                            // ZZZZZZZZZZZZZZZZZZZZZZ CHECK IF STATUS CHANGED THAN TEXT IS FIELD!!!!!
-                              // ZZZZZZZZZZZZZZZZZZZZZZ CHECK IF STATUS CHANGED THAN TEXT IS FIELD!!!!!
-                                // ZZZZZZZZZZZZZZZZZZZZZZ CHECK IF STATUS CHANGED THAN TEXT IS FIELD!!!!!
-                                
-            // MAP FOR ALL CHANGED FIELDS WITH FLAG
-
-
-
         },
 
+        /**
+        * Check if text is mandatory for a status
+        */
+        _isTextMandatoryForStatus: function (sStatusCode) {
+
+            for (var key1 in statusNames) {
+
+                if (sStatusCode == statusNames[key1]) {
+
+                    return statusesWithMandatoryTextComments.statuses.includes(key1);
+
+                }
+            }
+        },
+
+        /**
+        * Get text type for status
+        */
+        _getTextTypeForStatus: function (sStatusCode) {
+
+            var sTextTypeForStatus = textTypes.internalNote;
+
+            for (var key1 in statusNames) {
+
+                if (sStatusCode == statusNames[key1]) {
+                    for (var key2 in textTypesForStatuses) {
+                        if (key1 == key2) {
+
+                            sTextTypeForStatus = textTypesForStatuses[key2];
+                        }
+                    }
+                }
+            }
+
+            return sTextTypeForStatus;
+        },
+
+        /**
+       * Upload all incomplete problem attachments at once in a cycle
+       */
+
+        _uploadProblemAttachments: function (sGuid, callback) {
+
+            var oUploadSet = this.byId("UploadSet"),
+                sAttachmentUploadURL = "/ProblemSet(guid'" + sGuid + "')/Attachment",
+                oItems = oUploadSet.getIncompleteItems();
+
+            oUploadSet.setUploadUrl(sharedLibrary.getODataPath(this) + sAttachmentUploadURL);
+
+            for (var k = 0; k < oItems.length; k++) {
+
+                var oItem = oItems[k];
+                var sFileName = oItem.getFileName();
+
+                var oCustomerHeaderToken = new sap.ui.core.Item({
+                    key: "x-csrf-token",
+                    text: this.getModel().getSecurityToken()
+                });
+
+                // Header slug to store a file name
+                var oCustomerHeaderSlug = new sap.ui.core.Item({
+                    key: "slug",
+                    text: sFileName
+                });
+
+                oUploadSet.addHeaderField(oCustomerHeaderToken);
+                oUploadSet.addHeaderField(oCustomerHeaderSlug);
+                oUploadSet.uploadItem(oItem);
+                oUploadSet.removeAllHeaderFields();
+            }
+
+            callback();
+        },
 
         /**
         * Save problem
         */
-        _saveProblem: function () {
+        _saveProblem: function (oPayload, oTextPayload) {
 
+            var t = this;
+
+            // First step is a specific case when only a single text is entered in non-Customer action statuses,
+            // then we have to save it as internal note
+            // As NOTE property is related to a Problem SU01 text, we don't send it to backend
+            // We are sending an Internal Note SU04 instead of it
+
+            if (("Note" in oPayload) && (Object.keys(oPayload).length == 1)) {
+
+                if (oPayload["Note"].length > 0) {
+
+                    t._createProblemText(t.Guid, oTextPayload.Tdid, oTextPayload.TextString, function () {
+
+                        sap.m.MessageBox.information(t.getResourceBundle().getText("problemUpdatedSuccessfully", t.ObjectId));
+
+                        t._refreshApplicationAndSwitchOffEditMode();
+                    });
+                }
+
+            } else {
+
+                // Normal update of a problem, Note field is not needed anymore
+
+                oPayload["Note"] = "";
+
+                sharedLibrary.updateEntityByEdmGuidKey(this.Guid, oPayload, "ProblemSet",
+                    null, t.getResourceBundle().getText("problemUpdateFailure"), null,
+                    t, function () {
+
+                        // Filling problem texts, if required
+
+                        if (oTextPayload.TextString.length > 0) {
+
+                            t._createProblemText(t.Guid, oTextPayload.Tdid, oTextPayload.TextString, function () {
+
+                            });
+
+                        }
+
+                        // Adding attachments
+
+                        t._uploadProblemAttachments(t.Guid, function () {
+
+                            sap.m.MessageBox.information(t.getResourceBundle().getText("problemUpdatedSuccessfully", t.ObjectId));
+
+                            t.byId("UploadSet").getBinding("items").refresh();
+
+                            t._refreshApplicationAndSwitchOffEditMode();
+
+                        });
+
+                    });
+            }
+
+        },
+
+        /**
+        * Switch off edit mode and refresh texts and view
+        */
+        _refreshApplicationAndSwitchOffEditMode() {
+
+            // Switching off edit mode
+
+            this._resetEditMode();
+
+            // Refreshing texts
+
+            this._refreshTexts();
+
+            // Refreshing view
+
+            this._refreshView();
+
+        },
+
+        /**
+        * Get entered text
+        */
+        _getTextFieldValue: function () {
+
+            return this.byId("communicationTabTextInputArea").getValue();
 
         },
 
@@ -323,20 +854,11 @@ sap.ui.define([
                 oProblemChangedFields = [],
                 oProblemChangedField = {};
 
-            //oProblemChangedFields.Text = this.byId('communicationTabTextInputArea').getValue();
+            oProblemFieldsInScope.Status = this.byId("headerStatusSelect").getSelectedKey();
+            oProblemFieldsInScope.ProcessorBusinessPartner = this.selectedProcessor;
+            oProblemFieldsInScope.Priority = this.byId("headerPrioritySelect").getSelectedKey();
 
-            oProblemFieldsInScope.Status = this.byId('headerStatusSelect').getSelectedKey();
-
-            // zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz do it!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            // zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz do it!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            // zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz do it!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            // zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz do it!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            // zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz do it!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            //     oProblemChangedFields.ProcessorBusinessPartner = this.byId('headerProcessorSelect').getSelectedKey();
-            // zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz do it!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            // zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz do it!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            // zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz do it!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            // zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz do it!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            oProblemFieldsInScope.Note = this._getTextFieldValue();
 
             var oProblemFieldsInScopeKeys = Object.keys(oProblemFieldsInScope);
 
@@ -344,17 +866,67 @@ sap.ui.define([
 
                 if (this.initialProblemState[oProblemFieldsInScopeKeys[i]] !== oProblemFieldsInScope[oProblemFieldsInScopeKeys[i]]) {
 
-
                     oProblemChangedField[oProblemFieldsInScopeKeys[i]] = oProblemFieldsInScope[oProblemFieldsInScopeKeys[i]];
 
                     oProblemChangedFields.push(oProblemChangedField);
 
+                    oProblemChangedField = {};
 
                 }
-
             }
 
             return oProblemChangedFields;
+
+        },
+
+        /**
+         * Get selected processor full name
+        */
+        _getSelectedProcessorFullName: function () {
+
+            return this.byId('headerProcessorSelect').getValue();
+
+        },
+        /**
+         * Get selected prioirty text
+        */
+        _getSelectedPriorityText: function (sPriorityCode) {
+
+            var oPriorityArray = this.byId("headerPrioritySelect").getItems();
+
+            for (var i = 0; i < oPriorityArray.length; i++) {
+
+                if (oPriorityArray[i].getProperty("key") === sPriorityCode) {
+
+                    return oPriorityArray[i].getProperty("text");
+
+                }
+            }
+        },
+        /**
+         * Get selected status text
+        */
+        _getSelectedStatusText: function (sStatusCode) {
+
+            var oStatusArray = this.byId("headerStatusSelect").getItems();
+
+            for (var i = 0; i < oStatusArray.length; i++) {
+
+                if (oStatusArray[i].getProperty("key") === sStatusCode) {
+
+                    return oStatusArray[i].getProperty("text");
+
+                }
+            }
+        },
+
+        /**
+        * Reset edit mode 
+        */
+        _resetProcessor: function () {
+
+            this.selectedProcessor = '0000000000';
+            this.byId("headerProcessorSelect").setValue("");
 
         },
 
@@ -365,12 +937,8 @@ sap.ui.define([
 
             var oRuntimeModel = this.getOwnerComponent().getModel("runtimeModel");
             oRuntimeModel.setProperty("/editModeActive", false);
-
             this.oSemanticPage.setShowFooter(false);
-
             this.initialProblemState = {};
-
-
         },
 
         /**
@@ -389,7 +957,7 @@ sap.ui.define([
         /**
          * Save problem state before edit
          */
-        _saveProblemStateBeforeEdit: function () {
+        _storeProblemStateBeforeEdit: function () {
 
             var oView = this.getView(),
                 oViewModel = this.getModel("objectView"),
@@ -402,7 +970,6 @@ sap.ui.define([
         /**
          * Are we currently in edit mode
          */
-
         _isEditModeActive: function () {
 
             return this.getOwnerComponent().getModel("runtimeModel").getProperty("/editModeActive");

@@ -12,33 +12,41 @@
         toggleHeaderOnTitleClick="false"
         busy="{objectView>/busy}"
         busyIndicatorDelay="{objectView>/delay}"
-        showFooter="true">
+        showFooter="true"       >
 
 		<semantic:titleHeading>
-            <Title text="{ObjectId}: {Description}" id="fieldTitle" />
+       
+        <Title text="{ObjectId}: {Description}" id="fieldTitle" />
 		</semantic:titleHeading>
         <semantic:headerContent>
-
+          
                 <Table class="noColumnBorder" id="headerParameters" inset="false" width="50%">
                     <columns>
                         <Column id="headerParameterLabel" width="20%" />
-                        <Column id="headerParameterValue" width="50%" />
+                        <Column id="headerParameterValue" width="60%" />
+                        <Column id="headerParameterAction" width="20%" />
+      
                     </columns>
                     <items>
-                        <ColumnListItem id="headerParameterStatusItemDynamic" visible="{= ${runtimeModel>/editModeActive} ? true: false }">
+                        <ColumnListItem id="headerParameterStatusDynamic" visible="{= ${runtimeModel>/editModeActive} ? true: false }">
                             <cells>
                                 <Text text="{i18n>problemStatusTitle}" />        
                             </cells>
                             <cells>
                                 <Select id="headerStatusSelect" width="100%"   
                                 showSecondaryValues="true"  items="{path: 'AvailableStatuses'}"
-                                  selectedKey="{Status}">
+                                  selectedKey="{Status}" change="onChangeStatusSelect">
                                   <core:Item key="{Code}" text="{Text}" />
                               </Select>    
                                 
                                 </cells>
+                                <cells>
+                                    <Text id="dummySpacer1" visible="false" />
+                                </cells>
+
+              
                         </ColumnListItem>
-                        <ColumnListItem id="headerParameterStatusItemStatic" visible="{= ${runtimeModel>/editModeActive} ? false: true }">
+                        <ColumnListItem id="headerParameterStatusStatic" visible="{= ${runtimeModel>/editModeActive} ? false: true }">
                             <cells>
                                 <Text text="{i18n>problemStatusTitle}" />        
                             </cells>
@@ -46,21 +54,32 @@
                                 <Text text="{StatusText}"  />        
                                 
                                 </cells>
-
+                                <cells>
+                                    <Text id="dummySpacer2" visible="false" />
+                                </cells>
+          
                         </ColumnListItem>
-
-                        <ColumnListItem id="headerParameterProcessorItemDynamic" visible="{= ${runtimeModel>/editModeActive} ? true: false }">
+                        <ColumnListItem id="headerParameterProcessorItemDynamic" 
+                            visible="{= ${runtimeModel>/editModeActive} ? true: false }">
                             <cells>
                                 <Text text="{i18n>problemProcessorFullNameTitle}" />        
                             </cells>
                             <cells>
                                 <Input id="headerProcessorSelect" width="100%" value="{ProcessorFullName}"                 
                                 visible="{= ${runtimeModel>/editModeActive} ? true: false }" showValueHelp="true" 
-                                valueHelpOnly="true" valueHelpRequest="onheaderProcessorSelectValueHelpPress" />
-                                
+                                valueHelpOnly="true" valueHelpRequest="onHeaderProcessorSelectValueHelpPress" 
+                                enabled="false" 
+                               />               
+              
+                                </cells> 
+                                <cells>
+                                    <Button id="buttonResetProcessor" text="{i18n>resetProcessor}" press="onPressResetProcessor"
+                                        visible="{= ${runtimeModel>/editModeActive} ? true: false }" icon="sap-icon://decline"  />
                                 </cells>
+                   
                         </ColumnListItem>
-                        <ColumnListItem id="headerParameterStatusProcessorStatic" visible="{= ${runtimeModel>/editModeActive} ? false: true }">
+                        <ColumnListItem id="headerParameterProcessorStatic" 
+                            visible="{= ${runtimeModel>/editModeActive} ? false: true }">
                             <cells>
                                 <Text text="{i18n>problemProcessorFullNameTitle}" />        
                             </cells>
@@ -69,8 +88,29 @@
                                 
                                 </cells>
 
-                        </ColumnListItem>      
-                        <ColumnListItem id="headerParameterStatusPriorityStatic">
+                                <cells>
+                                    <Text id="dummySpacer3" visible="false" />
+                                </cells>
+                        </ColumnListItem>                            
+                        <ColumnListItem id="headerParameterPriorityDynamic" 
+                        visible="{= ${ProcessorPriorityChangeEnabled} ? ${runtimeModel>/editModeActive} ? true : false : false}">
+                            <cells>
+                                <Text text="{i18n>problemPriorityTitle}" />        
+                            </cells>
+                            <cells>
+                                <Select id="headerPrioritySelect" width="100%"    
+                                showSecondaryValues="true"  items="{ path: '/PrioritiesList' }"
+                                  change="onChangePrioritySelect">
+                                  <core:Item key="{Code}" text="{Description}"   />
+                            </Select>    
+                                
+                                </cells>
+                                <cells>
+                                    <Text id="dummySpacer4" visible="false" />
+                                </cells>
+                        </ColumnListItem>
+                        <ColumnListItem id="headerParameterPriorityStatic" 
+                        visible="{= ${ProcessorPriorityChangeEnabled} ? ${runtimeModel>/editModeActive} ? false : true : true}">
                             <cells>
                                 <Text text="{i18n>problemPriorityTitle}" />        
                             </cells>
@@ -78,22 +118,24 @@
                                 <Text text="{PriorityText}"  />        
                                 
                                 </cells>
-
+                                <cells>
+                                    <Text id="dummySpacer5" visible="false" />
+                                </cells>
+              
                         </ColumnListItem>
                     </items>
                 </Table>
-
         </semantic:headerContent>
         <semantic:content>
         <IconTabBar id="iconTabBar">
             <items>
 
                 <IconTabFilter id="tabCommunication" icon="sap-icon://comment" tooltip="{i18n>communicationIconTabBarText}" text="{i18n>communicationIconTabBarText}">
-                    <content>
-                        
-                        <Text text="{AvailableStatuses/Code}" visible="{= ${runtimeModel>/editModeActive} ? true: false }"/>   
+                    <content>                        
+                      <Text text="{AvailableStatuses/Code}" visible="{= ${runtimeModel>/editModeActive} ? true: false }"/>   
                       <VBox>
-                      <TextArea id="communicationTabTextInputArea" value="" width="100%" rows="15" visible="{= ${runtimeModel>/editModeActive} ? true: false }"/>
+                      <TextArea id="communicationTabTextInputArea" value="" width="100%" rows="15" visible="{= ${runtimeModel>/editModeActive} ? true: false }"
+                        liveChange="onChangeTextArea"/>
                         <List id="textsList" showSeparators="Inner" busyIndicatorDelay="0" items="{path: 'Text'}">
                             <FeedListItem id="communicationItem" iconDensityAware="false" showIcon="false" info="{UserText}" timestamp="{DateTimeText}" text="{TextString}" sender="{TdidTxt}" />
                         </List>
@@ -104,28 +146,31 @@
                 <IconTabFilter id="tabAttachments" icon="sap-icon://attachment" tooltip="{i18n>attachmentsIconTabBarText}" text="{i18n>attachmentsIconTabBarText}">
                     <content>
                         <upload:UploadSet
-                            id="UploadSet"
-                            instantUpload="false"
-                            showIcons="true"
-                            uploadEnabled="{= ${runtimeModel>/editModeActive} ? true: false }"
-                            terminationEnabled="true"
-                            fileTypes="jpeg,csv,txt,doc,png,docx,xlsx,jpg,pdf"
-                            maxFileNameLength="255"
-                            maxFileSize="10"
-                            mediaTypes="application/pdf,text/plain,application/msword,image/png,text/csv,text/html,application/zip,image/jpeg"
-                            items="{Attachment}"
-                            beforeUploadStarts="onBeforeUploadStarts"
-                            uploadCompleted="onUploadCompleted"
-                            afterItemAdded="onAfterItemAdded"
-                            noDataDescription="{i18n>noAttachmentsDescription}"
-                            noDataText="{i18n>noAttachmentsText}">
+                        id="UploadSet"
+                        instantUpload="false"
+                        showIcons="true"
+                        uploadEnabled="{runtimeModel>/editModeActive}"
+                        terminationEnabled="true"
+                        fileTypes="jpeg,csv,xls,txt,doc,png,docx,xlsx,jpg,pdf"
+                        maxFileNameLength="255"
+                        maxFileSize="10"
+                        mediaTypes="application/pdf,text/plain,application/msword,image/png,text/csv,text/html,application/zip,image/jpeg,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                        items="{Attachment}"
+                        beforeUploadStarts="onBeforeUploadStarts"
+                        uploadCompleted="onUploadCompleted"
+                        afterItemAdded="onAfterItemAdded"
+                        noDataDescription="{i18n>noAttachmentsDescription}"
+                        noDataText="{i18n>noAttachmentsText}"
+                    >
                             <upload:toolbar>
                                 <OverflowToolbar id="OverflowToolbar">
                                     <ToolbarSpacer id="ToolbarSpacer" />
                                 </OverflowToolbar>
                             </upload:toolbar>
-                            <upload:items>
-                                <upload:UploadSetItem id="UploadSetItem" fileName="{Name}" mediaType="{Mimetype}" url="{DocumentId}" visibleEdit="false" openPressed="onFileNamePress" removePressed="onAttachmentRemovalPress" />
+                            <upload:items>                        
+                                            
+                                <upload:UploadSetItem id="UploadSetItem" fileName="{Name}" mediaType="{Mimetype}" url="{DocumentId}"
+                                    visibleEdit="false" visibleRemove="false" enabledRemove="false" openPressed="onFileNamePress"  />
                             </upload:items>
                         </upload:UploadSet>
                     </content>
@@ -150,12 +195,21 @@
                                         <Text text="{i18n>categoryTitle}" width="100%" id="tableProblemDetailsLabelCatSchema" />
                                         <HBox id="tableProblemDetailsItemCategoryHBox">
                                             <Text text="{ path: 'CatSchemaName'}" width="100%" id="tableProblemDetailsFieldCatSchemaName" class="sapUiTinyMarginEnd" />
-                                            <Text text="/" width="100%" id="tableProblemDetailsSlash" class="sapUiTinyMarginEnd" />
+                                            <Text text="/" width="100%" id="tableProblemDetailsSlash1" class="sapUiTinyMarginEnd" />
                                             <Text text="{ path: 'CatSchemaNodeName'}" width="100%" id="tableProblemDetailsFieldCatSchemaNodeName" />
                                         </HBox>
                                     </cells>
                                 </ColumnListItem>
-
+                                <ColumnListItem id="tableProblemDetailsItemProduct">
+                                    <cells>
+                                        <Text text="{i18n>productTitle}" width="100%" id="tableProblemDetailsLabelProduct" />
+                                        <HBox id="tableProblemDetailsItemProductHBox">
+                                            <Text text="{ path: 'ProductName'}" width="100%" id="tableProblemDetailsFieldProductName" class="sapUiTinyMarginEnd" />
+                                            <Text text="/" width="100%" id="tableProblemDetailsSlash2" class="sapUiTinyMarginEnd" />
+                                            <Text text="{ path: 'ProductText'}" width="100%" id="tableProblemDetailsFieldProductText" />
+                                        </HBox>
+                                    </cells>
+                                </ColumnListItem>
                                 <ColumnListItem id="tableProblemDetailsItemPostingDate">
                                     <cells>
                                         <Text text="{i18n>postingDateTitle}" width="100%" id="tableProblemDetailsLabelPostingDate" />
@@ -168,6 +222,12 @@
                                         <Text text="{CreatedAt}" width="100%" id="tableProblemDetailsFieldCreationDate" />
                                     </cells>
                                 </ColumnListItem>
+                                <ColumnListItem id="tableProblemDetailsItemChangeDate">
+                                    <cells>
+                                        <Text text="{i18n>changeDateTitle}" width="100%" id="tableProblemDetailsLabelChangeDate" />
+                                        <Text text="{ChangedAt}" width="100%" id="tableProblemDetailsFieldChangeDate" />
+                                    </cells>
+                                </ColumnListItem>
                                 <ColumnListItem id="tableProblemDetailsItemRequestorLogin">
                                     <cells>
                                         <Text text="{i18n>requesterBusinessPartnerTitle}" width="100%" id="tableProblemDetailsLabelRequestorBusinessPartner" />
@@ -178,6 +238,15 @@
                                     <cells>
                                         <Text text="{i18n>requesterNameTitle}" width="100%" id="tableProblemDetailsLabelRequestorName" />
                                         <Text text="{RequestorFullName}" width="100%" id="tableProblemDetailsFieldRequestorName" />
+                                    </cells>
+                                </ColumnListItem>
+                                <ColumnListItem id="tableProblemDetailsItemFirstReaction" visible="{= ${FirstReactionDate} ? true : false}">
+                                    <cells>
+                                        <Text text="{i18n>firstReactionTitle}" width="100%" id="tableProblemDetailsLabelFirstReaction" />
+                                            <HBox id="tableProblemDetailsItemFirstReactionHBox">
+                                            <Text text="{ path: 'FirstReactionDate', type: 'sap.ui.model.type.DateTime', formatOptions: { pattern: 'dd.MM.yyyy' }}" width="100%" id="tableProblemDetailsFieldFirstReactionDate"  />
+                                            <Text text="{ path: 'FirstReactionTime', type: 'sap.ui.model.odata.type.Time', formatOptions: { pattern: 'HH:mm:ss' }}" width="100%" id="tableProblemDetailsFieldFirstReactionTime" class="sapUiTinyMarginBegin" />
+                                        </HBox>
                                     </cells>
                                 </ColumnListItem>
                                 <ColumnListItem id="tableProblemDetailsItemSLAIrtTimestamp">
@@ -216,22 +285,25 @@
                             </items>
                         </Table>
                     </content>
-                </IconTabFilter>
-             
+                </IconTabFilter>             
             </items>
         </IconTabBar>
-
 
         </semantic:content>
         
         <semantic:titleCustomTextActions>            
-                
-          <Button text="{i18n>buttonProcessorEditMode}" press="onPressProcessorEditMode"  id="buttonProcessorEditMode" visible="{ProcessorEditModeEnabled}" />
-          <Button text="{i18n>buttonProcessorTakeOver}" press="onPressProcessorTakeOver" id="buttonProcessorTakeOver"   visible="{ProcessorTakeOverEnabled}"/>
+          
+          <Button text="{i18n>buttonBack}" press="onNavBack"  id="buttonBack" icon="sap-icon://nav-back" />    
+          <Button text="{i18n>buttonProcessorEditMode}" press="onPressProcessorEditMode" 
+            id="buttonProcessorEditMode" visible="{ProcessorEditModeEnabled}" icon="sap-icon://edit"/>
+          <Button text="{i18n>buttonProcessorTakeOver}" press="onPressProcessorTakeOver"
+            id="buttonProcessorTakeOver"   visible="{ProcessorTakeOverEnabled}" icon="sap-icon://add"/>
+          <Button text="{i18n>buttonProcessorReturnFromWithdrawal}" press="onPressReturnFromWithdrawal" id="buttonProcessorReturnFromWithdrawal"  icon="sap-icon://undo"  
+                visible="{ProcessorReturnFromWithdrawal}"/>
                 
         </semantic:titleCustomTextActions>
         <semantic:footerCustomActions>
-            <Button text="{i18n>buttonSave}" press="onPressProcessorSave" id="buttonSave" />
+            <Button text="{i18n>buttonSave}" press="onPressProcessorSave" id="buttonSave" icon="sap-icon://save" />
         </semantic:footerCustomActions>
 
     </semantic:SemanticPage>
