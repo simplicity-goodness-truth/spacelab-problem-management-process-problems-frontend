@@ -29,6 +29,7 @@ const textTypesForStatuses = Object.freeze(
         static approved = 'SU01';
         static customerAction = 'SU01';
         static solutionProvided = 'SUSO';
+        static informationRequested = 'SU01';
         
     });
 
