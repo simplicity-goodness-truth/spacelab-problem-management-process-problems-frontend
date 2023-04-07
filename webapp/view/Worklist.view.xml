@@ -37,6 +37,12 @@ xmlns:fb="sap.ui.comp.filterbar" xmlns:core="sap.ui.core" height="90%">
 					<Column id="problemsTableProblemNumber">
 						<Text text="{i18n>problemNumberTitle}" id="problemsTableProblemNumberLabel" />
 					</Column>
+					<Column id="problemsTableCreatedInternally">
+						<Text text="{i18n>problemCreatedInternallyTitle}" id="problemsTableProblemCreatedInternallyLabel" />
+					</Column>
+					<Column id="problemsTableCompany">
+						<Text text="{i18n>requesterCompanyNameTitle}" id="problemsTableProblemCompanyLabel" />
+					</Column>
 					<Column id="problemsTableProblemStatus">
 						<Text text="{i18n>problemStatusTitle}" id="problemsTableProblemStatusLabel" />
 					</Column>
@@ -65,22 +71,30 @@ xmlns:fb="sap.ui.comp.filterbar" xmlns:core="sap.ui.core" height="90%">
 							<Text text="{ObjectId}" id="problemsTableObjectId"/>
 						</cells>
 						<cells>
+							<ObjectStatus
+							state="{= ${CreatedInternally} ? 'Success' : 'Error' }" 
+							icon="{= ${CreatedInternally} ? 'sap-icon://headset' : 'sap-icon://customer' }"
+							id="CreatedInternallyObjectStatus"/>
+						</cells>
+						<cells>
+							<Text text="{CompanyName}" id="problemsTablCompanyName"/>
+						</cells>
+						<cells>
 							<Text text="{StatusText}" id="problemsTableStatusText"/>
 						</cells>
 						<cells>
-							<ObjectStatus class="sapUiSmallMarginBottom"
-								text="{SLAIrtPerc} %"			
-								state="{= ${SLAIrtIconBsp} === 'NOTDUE' ? 'Success' : 'Error' }" 
-								icon="{= ${SLAIrtIconBsp} === 'NOTDUE' ? '' : 'sap-icon://alert' }"
-							/>							
+							<ObjectStatus 
+								text="{=  ${SLAsOnHold}  ? ${StoredSLAIrtPerc} : ${SLAIrtPerc} } %" width="100%"			
+								state="{= ${SLAsOnHold}  ? 'Information' : ${SLAIrtIconBsp} === 'NOTDUE' ? 'Success' : 'Error' }" 
+								icon="{= ${SLAsOnHold}  ? 'sap-icon://pause' : ${SLAIrtIconBsp} === 'NOTDUE' ? '' : 'sap-icon://alert' }"
+								id="SLAIrtPercObjectStatus"/>
 						</cells>
 						<cells>
-							<ObjectStatus
-								class="sapUiSmallMarginBottom"
+							<ObjectStatus								
 								text="{SLAMptPerc} %"			
-								state="{= ${SLAMptIconBsp} === 'NOTDUE' ? 'Success' : 'Error' }" 
-								icon="{= ${SLAMptIconBsp} === 'NOTDUE' ? '' : 'sap-icon://alert' }"
-							/>
+								state="{= ${SLAsOnHold}  ? 'Information' : ${SLAMptIconBsp} === 'NOTDUE' ? 'Success' : 'Error' }" 
+								icon="{= ${SLAsOnHold}  ? 'sap-icon://pause' : ${SLAMptIconBsp} === 'NOTDUE' ? '' : 'sap-icon://alert' }"
+								id="SLAMptPercObjectStatus"/>
 						</cells>
 						<cells>
 							<Text text="{PriorityText}" id="problemsTablePriorityText" />

@@ -10,28 +10,31 @@ const textTypes = Object.freeze(
         static businessConsequences = 'SUBI';
     });
 
-const statusNames = Object.freeze(
-    class statusNames {
-        static new = 'E0001'
-        static approved = 'E0015';
-        static inProcess = 'E0002';
-        static customerAction = 'E0003';
-        static solutionProvided = 'E0005';
-        static confirmed = 'E0008';
-        static withdrawn = 'E0010';
-    });
-
+    const statusNames = Object.freeze(
+        class statusNames {
+            static new = 'E0001'
+            static approved = 'E0015';
+            static inProcess = 'E0002';
+            static customerAction = 'E0003';
+            static solutionProvided = 'E0005';
+            static confirmed = 'E0008';
+            static withdrawn = 'E0010';
+            static onApproval = 'E0016';
+            static informationRequested = 'E0017';
+        });
+    
 const textTypesForStatuses = Object.freeze(
     class textTypesForStatuses {
 
         static approved = 'SU01';
         static customerAction = 'SU01';
         static solutionProvided = 'SUSO';
+        
     });
 
 const statusesWithMandatoryTextComments = Object.freeze(
     class statusesWithMandatoryTextComments {
-        static statuses = ['customerAction', 'solutionProvided', 'approved'];
+        static statuses = ['customerAction', 'solutionProvided', 'approved', 'informationRequested', 'withdrawn'];
     });
 
 const statusesWithPossibleProccessorChange = Object.freeze(
@@ -141,7 +144,7 @@ sap.ui.define([
         */
         onChangeStatusSelect: function (oEvent) {
 
-            this.byId("communicationTabTextInputArea").setValue("");
+            
             sharedLibrary.dropFieldState(this, "communicationTabTextInputArea");
             this._setProcessorChangePossibility(oEvent.getSource().getSelectedKey());
 
@@ -218,6 +221,15 @@ sap.ui.define([
         },
 
         /**
+        * Refresh button pressed
+        */
+
+        onPressProcessorRefresh: function () {
+
+            this._refreshApplicationAndSwitchOffEditMode();
+        },
+
+        /**
         * Edit button pressed
         */
         onPressProcessorEditMode: function () {
@@ -290,7 +302,6 @@ sap.ui.define([
         /* =========================================================== */
         /* internal methods                                            */
         /* =========================================================== */
-
         /**
         * Return a problem from Withdrawn to In Process
         */
@@ -631,6 +642,13 @@ sap.ui.define([
                                 sSelectedTextValue = oChangedFields[k][oChangedFieldsKeys[i]];
                                 break;
 
+                        }
+
+                        // Limit preview for 50 characters to avoid trash on screen 
+
+                        if (sSelectedTextValue.length > 50) {
+
+                            sSelectedTextValue = sSelectedTextValue.slice(0, 50) + "...";
                         }
 
                         sListOfChangedFields =
