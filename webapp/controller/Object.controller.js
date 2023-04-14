@@ -10,19 +10,19 @@ const textTypes = Object.freeze(
         static businessConsequences = 'SUBI';
     });
 
-    const statusNames = Object.freeze(
-        class statusNames {
-            static new = 'E0001'
-            static approved = 'E0015';
-            static inProcess = 'E0002';
-            static customerAction = 'E0003';
-            static solutionProvided = 'E0005';
-            static confirmed = 'E0008';
-            static withdrawn = 'E0010';
-            static onApproval = 'E0016';
-            static informationRequested = 'E0017';
-        });
-    
+const statusNames = Object.freeze(
+    class statusNames {
+        static new = 'E0001'
+        static approved = 'E0015';
+        static inProcess = 'E0002';
+        static customerAction = 'E0003';
+        static solutionProvided = 'E0005';
+        static confirmed = 'E0008';
+        static withdrawn = 'E0010';
+        static onApproval = 'E0016';
+        static informationRequested = 'E0017';
+    });
+
 const textTypesForStatuses = Object.freeze(
     class textTypesForStatuses {
 
@@ -30,7 +30,7 @@ const textTypesForStatuses = Object.freeze(
         static customerAction = 'SU01';
         static solutionProvided = 'SUSO';
         static informationRequested = 'SU01';
-        
+
     });
 
 const statusesWithMandatoryTextComments = Object.freeze(
@@ -112,25 +112,36 @@ sap.ui.define([
         /* event handlers                                              */
         /* =========================================================== */
 
+
+        /**
+       * Processor pressed on SLA IRT History
+       */
+        onPressIrtHistory: function () {
+
+            this._openSLAIrtHistoryDialog();
+        },
+
+        /**
+        * Processor pressed on SLA MPT History
+        */
+        onPressMptHistory: function () {
+
+            this._openSLAMptHistoryDialog()
+
+        },
+
         /**
         * Processor pressed on a Return from Withdrawal button
         */
         onPressReturnFromWithdrawal: function (oEvent) {
-
-
             this._returnFromWithdrawal();
-
-
         },
 
         /**
         * Processor reset button pressed
         */
         onPressResetProcessor: function (oEvent) {
-
             this._resetProcessor();
-
-
         },
 
         /**
@@ -145,7 +156,7 @@ sap.ui.define([
         */
         onChangeStatusSelect: function (oEvent) {
 
-            
+
             sharedLibrary.dropFieldState(this, "communicationTabTextInputArea");
             this._setProcessorChangePossibility(oEvent.getSource().getSelectedKey());
 
@@ -220,6 +231,28 @@ sap.ui.define([
             this._takeOverProblem();
 
         },
+
+
+        /**
+        * Close SLA IRT History dialog
+        */
+        onCloseSLAMptHistoryDialog: function () {
+
+            this._destroySLAMptHistoryDialog();
+
+        },
+
+
+        /**
+        * Close SLA IRT History dialog
+        */
+        onCloseSLAIrtHistoryDialog: function () {
+
+            this._destroySLAIrtHistoryDialog();
+
+        }
+
+        ,
 
         /**
         * Refresh button pressed
@@ -471,6 +504,24 @@ sap.ui.define([
         },
 
         /**
+        * Get tabs full Id by Id mask
+        */
+        _getFullTabIdByIdMask: function (sIdMask) {
+
+            var oIconTabBarItems = this.byId("iconTabBar").getItems();
+
+            for (var i = 0; i < oIconTabBarItems.length; i++) {
+
+                if (oIconTabBarItems[i].sId.indexOf(sIdMask) > 0) {
+
+                    return oIconTabBarItems[i].sId;
+
+                }
+            }
+
+        },
+
+        /**
         * Switch edit mode
         */
         _switchEditMode: function () {
@@ -510,6 +561,12 @@ sap.ui.define([
                 //  Loading a list of priorities
 
                 this._setupAvailablePriorities();
+
+                // Switching to communication tab
+
+                var sTabCommunicationFullName = this._getFullTabIdByIdMask("tabCommunication");
+
+                this.byId("iconTabBar").setSelectedKey(sTabCommunicationFullName);
 
             }
 
@@ -574,6 +631,113 @@ sap.ui.define([
 
                     });
             });
+        },
+
+        /**
+        * Destroy SLA IRT History dialog
+        */
+        _destroySLAIrtHistoryDialog: function () {
+
+            this.oSLAIrtHistoryFragment.destroy(true);
+        },
+
+
+        /**
+        * Destroy SLA MPT History dialog
+        */
+        _destroySLAMptHistoryDialog: function () {
+
+            this.oSLAMptHistoryFragment.destroy(true);
+        },
+
+
+        /**
+        * Get SLA IRT History from backend
+        */
+        _setSLAIrtHistory: function () {
+
+            var t = this,
+                sErroneousExecutionText = this.getResourceBundle().getText("oDataModelReadFailure");
+
+            sharedLibrary.readEntitiesAssoiciationByEdmGuidKey("Problem", this.Guid, "SLAIrtHistory",
+                sErroneousExecutionText, this, false, false, function (oData) {
+
+                    t.oSLAIrtHistory = oData.results;
+
+                });
+
+
+        },
+
+        /**
+        * Get SLA MPT History from backend
+        */
+        _setSLAMptHistory: function () {
+
+            var t = this,
+                sErroneousExecutionText = this.getResourceBundle().getText("oDataModelReadFailure");
+
+            sharedLibrary.readEntitiesAssoiciationByEdmGuidKey("Problem", this.Guid, "SLAMptHistory",
+                sErroneousExecutionText, this, false, false, function (oData) {
+
+                    t.oSLAMptHistory = oData.results;
+
+                });
+
+
+        },
+
+        /**
+     * Open SLA MPT History dialog
+     */
+        _openSLAMptHistoryDialog: function () {
+
+
+            var t = this;
+
+            this._setSLAMptHistory();
+
+            this.oSLAMptHistoryFragment = sap.ui.xmlfragment("zslpmprprb.view.SLAMptHistory", this);
+
+            this.getView().addDependent(this.oSLAMptHistoryFragment);
+
+            this.oSLAMptHistoryFragment.open();
+
+            var oSLAMptHistory = new sap.ui.model.json.JSONModel({
+
+                SLAMptHistoryList: t.oSLAMptHistory
+
+            });
+
+            sap.ui.getCore().byId("SLAMptHistoryTable").setModel(oSLAMptHistory, "SLAMptHistoryModel");
+
+        },
+
+
+        /**
+        * Open SLA IRT History dialog
+        */
+        _openSLAIrtHistoryDialog: function () {
+
+
+            var t = this;
+
+            this._setSLAIrtHistory();
+
+            this.oSLAIrtHistoryFragment = sap.ui.xmlfragment("zslpmprprb.view.SLAIrtHistory", this);
+
+            this.getView().addDependent(this.oSLAIrtHistoryFragment);
+
+            this.oSLAIrtHistoryFragment.open();
+
+            var oSLAIrtHistory = new sap.ui.model.json.JSONModel({
+
+                SLAIrtHistoryList: t.oSLAIrtHistory
+
+            });
+
+            sap.ui.getCore().byId("SLAIrtHistoryTable").setModel(oSLAIrtHistory, "SLAIrtHistoryModel");
+
         },
 
         /**

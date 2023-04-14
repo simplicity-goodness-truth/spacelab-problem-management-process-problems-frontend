@@ -76,8 +76,19 @@ sap.ui.define([
                 sErroneousExecutionText = this.getResourceBundle().getText("oDataModelReadFailure");
 
             sharedLibrary.readEntity("SystemUser", sErroneousExecutionText, this, false, true,  function (oData) {
-                    t.oSystemUser = oData.results[0];                    
-                    return callback();
+                    t.oSystemUser = oData.results[0];    
+                    
+                    if (!t.oSystemUser.AuthorizedToReadProblems 
+                        || !t.oSystemUser.AuthorizedToUpdateProblem )  {
+
+                        sap.m.MessageBox.error(t.getResourceBundle().getText("userNotAuthorizedToRunThisApp"));
+    
+                    } else {
+    
+                        return callback();
+    
+                    }
+                    
                     
             });
         },

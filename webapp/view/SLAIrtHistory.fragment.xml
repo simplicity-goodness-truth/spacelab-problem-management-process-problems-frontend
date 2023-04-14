@@ -1,0 +1,81 @@
+<?xml version="1.0"?>
+<core:FragmentDefinition xmlns:core="sap.ui.core" xmlns="sap.m">
+
+<Dialog id="SLAIrtHistoryDialog" title="{i18n>SLAIrtHistoryDialog}">
+
+    
+<Table id="SLAIrtHistoryTable" width="auto" 
+items="{
+    path: 'SLAIrtHistoryModel>/SLAIrtHistoryList',
+    sorter: {
+        path: 'UpdateTimestamp',
+        descending: false
+    }
+}">
+
+<columns>
+    <Column id="UpdateTimestamp">
+        <Text text="{i18n>updateTimestamp}" id="updateTimestampLabel" />
+    </Column>
+
+    <Column id="StatusInText">
+        <Text text="{i18n>statusIn}" id="statusInLabel" />
+    </Column>
+    
+    <Column id="StatusOutText">
+        <Text text="{i18n>statusOut}" id="statusOutLabel" />
+    </Column>
+
+    <Column id="PriorityInText">
+        <Text text="{i18n>priorityIn}" id="priorityInLabel" />
+    </Column>
+    <Column id="PriorityOutText">
+        <Text text="{i18n>priorityOut}" id="priorityOutLabel"/>
+    </Column>
+    <Column id="IrtTimestamp">
+        <Text text="{i18n>SLAIrtTimestamp}" id="SLAIrtTimestampLabel"/>
+    </Column>
+
+    <Column id="IrtPercent">
+        <Text text="{i18n>SLAIrtPercent}" id="SLAIrtPercentLabel"/>
+    </Column>
+
+</columns>
+<items>
+    <ColumnListItem id="IrtHistoryRecord">
+        <cells>
+            <Text text="{SLAIrtHistoryModel>UpdateTimestamp}" />
+        </cells>
+       
+        <cells>
+            <Text text="{SLAIrtHistoryModel>StatusInText}" />
+        </cells>
+
+        <cells>
+            <Text text="{SLAIrtHistoryModel>StatusOutText}" />
+        </cells>
+
+        <cells>
+            <Text text="{SLAIrtHistoryModel>PriorityInText}" />
+        </cells>
+        <cells>
+            <Text text="{SLAIrtHistoryModel>PriorityOutText}" />
+        </cells>
+        <cells>
+            <Text text="{SLAIrtHistoryModel>IrtTimestamp}" />
+        </cells>
+        <cells>
+            <Text text="{SLAIrtHistoryModel>IrtPerc} %" />
+        </cells>
+
+    </ColumnListItem>
+</items>
+</Table>
+
+<buttons>
+    <Button text="{i18n>Ok}" press="onCloseSLAIrtHistoryDialog" id="buttonCloseSLAIrtHistoryDialog"/> 
+</buttons>
+
+</Dialog>
+
+</core:FragmentDefinition>

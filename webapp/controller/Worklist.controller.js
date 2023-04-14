@@ -108,23 +108,73 @@ sap.ui.define([
             history.go(-1);
         },
 
-
+        /**
+         * Filter search executed
+        */
         onSearch: function (oEvent) {
-            if (oEvent.getParameters().refreshButtonPressed) {
-                // Search field's 'refresh' button has been pressed.
-                // This is visible if you select any main list item.
-                // In this case no new search is triggered, we only
-                // refresh the list binding.
-                this.onRefresh();
-            } else {
-                var aTableSearchState = [];
-                var sQuery = oEvent.getParameter("query");
 
-                if (sQuery && sQuery.length > 0) {
-                    aTableSearchState = [new Filter("ObjectId", FilterOperator.Contains, sQuery)];
+
+            var aTableSearchState = [];
+
+            // Picking all selected items from multi-selectional filters
+
+            var oMultipleSelectionFilters = [
+                {
+                    filterName: "priorityFilter",
+                    propertyName: "Priority"
+                },
+                {
+                    filterName: "statusFilter",
+                    propertyName: "Status"
+                },
+                {
+                    filterName: "companyFilter",
+                    propertyName: "CompanyBusinessPartner"
+                },
+                {
+                    filterName: "processorFilter",
+                    propertyName: "ProcessorBusinessPartner"
                 }
-                this._applySearch(aTableSearchState);
+            ];
+
+            aTableSearchState = this._fillFilterForMultipleSelection(oMultipleSelectionFilters);
+
+            // Filter by dates
+
+            var dateFrom = this.getView().byId("dateRangeSelector").getDateValue();
+            var dateTo = this.getView().byId("dateRangeSelector").getSecondDateValue();
+
+            if (dateFrom && dateTo) {
+
+                var D = new Date(dateFrom);
+                var t = D.getTimezoneOffset();
+                D.setMinutes(D.getMinutes() - t);
+
+                var e = new Date(dateTo);
+                e.setMinutes(e.getMinutes() - t);
+
+                aTableSearchState.push(new Filter("PostingDate", FilterOperator.BT, D, e));
+
             }
+
+
+            this._applySearch(aTableSearchState);
+
+            // if (oEvent.getParameters().refreshButtonPressed) {
+            //     // Search field's 'refresh' button has been pressed.
+            //     // This is visible if you select any main list item.
+            //     // In this case no new search is triggered, we only
+            //     // refresh the list binding.
+            //     this.onRefresh();
+            // } else {
+            //     var aTableSearchState = [];
+            //     var sQuery = oEvent.getParameter("query");
+
+            //     if (sQuery && sQuery.length > 0) {
+            //         aTableSearchState = [new Filter("ObjectId", FilterOperator.Contains, sQuery)];
+            //     }
+            //     this._applySearch(aTableSearchState);
+            // }
 
         },
 
@@ -134,7 +184,7 @@ sap.ui.define([
          * @public
          */
         onRefresh: function () {
-            var oTable = this.byId("table");
+            var oTable = this.byId("problemsTable");
             oTable.getBinding("items").refresh();
         },
 
@@ -142,7 +192,41 @@ sap.ui.define([
         /* internal methods                                            */
         /* =========================================================== */
 
+        /**
+         * Fill filter for multiple selection
+        */
+        _fillFilterForMultipleSelection: function (oMultipleSelectionFilters) {
 
+            var oOutputFilter = [],
+                t = this;
+
+            $.each(oMultipleSelectionFilters, function (i) {
+
+                var sFilterName = oMultipleSelectionFilters[i].filterName;
+                var sPropertyName = oMultipleSelectionFilters[i].propertyName;
+
+                var oFilter = t.getView().byId(sFilterName);
+
+                if (oFilter) {
+                    var oSelectedKeys = oFilter.getSelectedKeys();
+
+                    $.each(oSelectedKeys, function (j) {
+
+                        oOutputFilter.push(
+                            new Filter({
+                                path: sPropertyName,
+                                operator: sap.ui.model.FilterOperator.EQ,
+                                value1: oSelectedKeys[j]
+                            }));
+
+                    }); // $.each(oSelectedKeys, function (j)
+
+                } // if (oFilter)
+
+            }); // $.each(oMultipleSelectionFilters, function (i)
+
+            return oOutputFilter;
+        },
 
         /**
          * Shows the selected item on the object page
@@ -161,7 +245,7 @@ sap.ui.define([
          * @private
          */
         _applySearch: function (aTableSearchState) {
-            var oTable = this.byId("table"),
+            var oTable = this.byId("problemsTable"),
                 oViewModel = this.getModel("worklistView");
             oTable.getBinding("items").filter(aTableSearchState, "Application");
             // changes the noDataText of the list in case there are no filter results
