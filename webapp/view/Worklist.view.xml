@@ -1,0 +1,154 @@
+<mvc:View controllerName="yslpmprprb.controller.Worklist" xmlns="sap.m" xmlns:mvc="sap.ui.core.mvc" xmlns:semantic="sap.f.semantic"
+xmlns:fb="sap.ui.comp.filterbar" xmlns:core="sap.ui.core" height="90%">
+	<fb:FilterBar reset="onReset"  search="onSearch"  id="mainFilterBar">
+		<fb:filterGroupItems>
+			<fb:FilterGroupItem groupName="filterPriority" name="A" showClearOnFB="true" partOfCurrentVariant="true" visibleInFilterBar="true"
+                label="{i18n>problemPriorityTitle}" id="filterPriority">
+				<fb:control>
+					<MultiComboBox id="priorityFilter" width="350px" items="{
+                    path: '/PrioritySet',
+                    sorter: { path: 'Code' }
+					}">
+						<core:Item key="{Code}" text="{Description}" id="priorityFilterItem" />
+					</MultiComboBox>
+				</fb:control>
+			</fb:FilterGroupItem>
+			<fb:FilterGroupItem groupName="filterStatus" name="A" partOfCurrentVariant="true" visibleInFilterBar="true"
+                label="{i18n>problemStatusTitle}" id="filterStatus">
+				<fb:control>
+					<MultiComboBox id="statusFilter" width="350px" items="{
+                    path: '/StatusSet',
+                    sorter: { path: 'Code' }
+					}">
+						<core:Item key="{Code}" text="{Text}" id="statusFilterItem" />
+					</MultiComboBox>
+				</fb:control>
+			</fb:FilterGroupItem>
+			<fb:FilterGroupItem groupName="filterCompany" name="A" partOfCurrentVariant="true" visibleInFilterBar="true"
+                label="{i18n>requesterCompanyNameTitle}" id="filterCompany">
+				<fb:control>
+					<MultiComboBox id="companyFilter" width="350px" items="{
+                    path: '/CompanySet',
+                    sorter: { path: 'CompanyBusinessPartner' }
+					}">
+						<core:Item key="{CompanyBusinessPartner}" text="{CompanyName}" id="companyFilterItem" />
+					</MultiComboBox>
+				</fb:control>
+			</fb:FilterGroupItem>
+			<fb:FilterGroupItem groupName="filterProcessor" name="A" partOfCurrentVariant="true" visibleInFilterBar="true"
+			label="{i18n>problemProcessorFullNameTitle}" id="filterProcessor">
+			<fb:control>
+				<MultiComboBox id="processorFilter" width="350px" items="{
+				path: '/ProcessorSet',
+				sorter: { path: 'FullName' }
+				}">
+					<core:Item key="{BusinessPartner}" text="{FullName}" id="processorFilterItem" />
+				</MultiComboBox>
+			</fb:control>
+		</fb:FilterGroupItem>
+		<fb:FilterGroupItem groupName="filterPostingDate" name="A" partOfCurrentVariant="true" visibleInFilterBar="true" label="{i18n>postingDateTitle}">
+			<fb:control>
+				<DateRangeSelection id="dateRangeSelector" width="auto"/>
+			</fb:control>
+		</fb:FilterGroupItem>
+		</fb:filterGroupItems>
+	</fb:FilterBar>
+	<semantic:SemanticPage id="page" headerPinnable="false" toggleHeaderOnTitleClick="false">
+		<semantic:content>
+			<Table id="problemsTable" width="auto" items="{
+                    path: '/ProblemSet',
+                    sorter: {
+                        path: 'ObjectId',
+                        descending: false
+                    }
+                }" noDataText="{worklistView>/tableNoDataText}"
+				busyIndicatorDelay="{worklistView>/tableBusyDelay}" 
+				growing="true" growingThreshold="15"  growingScrollToLoad="false" updateFinished=".onUpdateFinished">
+				<headerToolbar>
+					<Toolbar id="problemsTableToolbar">
+						<Title id="tableHeader" />
+						<ToolbarSpacer id="problemsTableToolbarSpacer" />
+						<Button icon="sap-icon://excel-attachment" press="onPressExportToExcel" id="buttonExportToExcel" visible="true" />
+					</Toolbar>
+				</headerToolbar>
+				<columns>
+					<Column id="problemsTableProblemNumber">
+						<Text text="{i18n>problemNumberTitle}" id="problemsTableProblemNumberLabel" />
+					</Column>
+					<Column id="problemsTableCreatedInternally">
+						<Text text="{i18n>problemCreatedInternallyTitle}" id="problemsTableProblemCreatedInternallyLabel" />
+					</Column>
+					<Column id="problemsTableCompany">
+						<Text text="{i18n>requesterCompanyNameTitle}" id="problemsTableProblemCompanyLabel" />
+					</Column>
+					<Column id="problemsTableProblemStatus">
+						<Text text="{i18n>problemStatusTitle}" id="problemsTableProblemStatusLabel" />
+					</Column>
+					<Column id="problemsTableProblemIrt">
+						<Text text="{i18n>SLAIrtPerc}" id="problemsTableSLAIrtPercLabel"/>
+					</Column>
+					<Column id="problemsTableProblemMpt">
+						<Text text="{i18n>SLAMptPerc}" id="problemsTableSLAMptPercLabel"/>
+					</Column>
+					<Column id="problemsTableProblemPriority">
+						<Text text="{i18n>problemPriorityTitle}" id="problemsTableProblemPriorityLabel"/>
+					</Column>
+					<Column id="problemsTableProblemDescription">
+						<Text text="{i18n>descriptionTitle}" id="problemsTableDescriptionLabel"/>
+					</Column>
+					<Column id="problemsTableProblemProcessorFullName">
+						<Text text="{i18n>problemProcessorFullNameTitle}" id="problemsTableProblemProcessorFullNameLabel" />
+					</Column>
+					<Column id="problemsTableProblemCreationDateLabel">
+						<Text text="{i18n>creationDateTitle}" id="problemsTableCreationDateLabel"/>
+					</Column>
+				</columns>
+				<items>
+					<ColumnListItem type="Navigation" press=".onPress" id="problemsTableColumnListItem">
+						<cells>
+							<Text text="{ObjectId}" id="problemsTableObjectId"/>
+						</cells>
+						<cells>
+							<ObjectStatus
+							state="{= ${CreatedInternally} ? 'Success' : 'Error' }" 
+							icon="{= ${CreatedInternally} ? 'sap-icon://headset' : 'sap-icon://customer' }"
+							id="CreatedInternallyObjectStatus"/>
+						</cells>
+						<cells>
+							<Text text="{CompanyName}" id="problemsTablCompanyName"/>
+						</cells>
+						<cells>
+							<Text text="{StatusText}" id="problemsTableStatusText"/>
+						</cells>
+						<cells>
+							<ObjectStatus 
+								text="{=  ${IrtSLAOnHold}  ? ${StoredSLAIrtPerc} : ${SLAIrtPerc} } %" width="100%"			
+								state="{= ${IrtSLAOnHold}  ? 'Information' : ${SLAIrtIconBsp} === 'NOTDUE' ? 'Success' : 'Error' }" 
+								icon="{= ${FirstReactionDate}  ? 'sap-icon://complete' : ${IrtSLAOnHold} ? 'sap-icon://pause' : 'sap-icon://pending' }"
+								id="SLAIrtPercObjectStatus"/>
+						</cells>
+						<cells>
+							<ObjectStatus								
+								text="{SLAMptPerc} %"			
+								state="{= ${MptSLAOnHold}  ? 'Information' : ${SLAMptIconBsp} === 'NOTDUE' ? 'Success' : 'Error' }" 
+								icon="{= ${Status} === 'E0008' || ${Status} === 'E0010'? 'sap-icon://complete' : ${MptSLAOnHold} ? 'sap-icon://pause' : 'sap-icon://pending' }"
+								id="SLAMptPercObjectStatus"/>
+						</cells>
+						<cells>
+							<Text text="{PriorityText}" id="problemsTablePriorityText" />
+						</cells>
+						<cells>
+							<Text text="{Description}" id="problemsTableDescription"/>
+						</cells>
+						<cells>
+							<Text text="{ProcessorFullName}" id="problemsTableProcessorFullName"/>
+						</cells>
+						<cells>
+							<Text text="{CreatedAt}" id="problemsTableCreatedAt"/>
+						</cells>
+					</ColumnListItem>
+				</items>
+			</Table>
+		</semantic:content>
+	</semantic:SemanticPage>
+</mvc:View>

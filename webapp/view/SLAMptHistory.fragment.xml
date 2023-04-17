@@ -1,0 +1,83 @@
+<?xml version="1.0"?>
+<core:FragmentDefinition xmlns:core="sap.ui.core" xmlns="sap.m">
+
+<Dialog id="SLAMptHistoryDialog" title="{i18n>SLAMptHistoryDialog}">
+
+    
+<Table id="SLAMptHistoryTable" width="auto" 
+items="{
+    path: 'SLAMptHistoryModel>/SLAMptHistoryList',
+    sorter: {
+        path: 'UpdateTimestamp',
+        descending: false
+    }
+}">
+
+<columns>
+    <Column id="UpdateTimestamp">
+        <Text text="{i18n>updateTimestamp}" id="updateTimestampLabel" />
+    </Column>
+
+    <Column id="StatusInText">
+        <Text text="{i18n>statusIn}" id="statusInLabel" />
+    </Column>
+    
+    <Column id="StatusOutText">
+        <Text text="{i18n>statusOut}" id="statusOutLabel" />
+    </Column>
+
+    <Column id="PriorityInText">
+        <Text text="{i18n>priorityIn}" id="priorityInLabel" />
+    </Column>
+    <Column id="PriorityOutText">
+        <Text text="{i18n>priorityOut}" id="priorityOutLabel"/>
+    </Column>
+
+    <Column id="MptTimestamp">
+        <Text text="{i18n>SLAMptTimestamp}" id="SLAMptTimestampLabel"/>
+    </Column>
+
+    <Column id="MptPercent">
+        <Text text="{i18n>SLAMptPercent}" id="SLAMptPercentLabel"/>
+    </Column>
+
+</columns>
+<items>
+    <ColumnListItem id="MptHistoryRecord">
+        <cells>
+            <Text text="{SLAMptHistoryModel>UpdateTimestamp}" />
+        </cells>
+       
+        <cells>
+            <Text text="{SLAMptHistoryModel>StatusInText}" />
+        </cells>
+
+        <cells>
+            <Text text="{SLAMptHistoryModel>StatusOutText}" />
+        </cells>
+
+        <cells>
+            <Text text="{SLAMptHistoryModel>PriorityInText}" />
+        </cells>
+        <cells>
+            <Text text="{SLAMptHistoryModel>PriorityOutText}" />
+        </cells>
+        <cells>
+            <Text text="{SLAMptHistoryModel>MptTimestamp}" />
+        </cells>
+
+        <cells>
+            <Text text="{SLAMptHistoryModel>MptPerc} %" />
+        </cells>
+
+    </ColumnListItem>
+</items>
+</Table>
+
+<buttons>
+    <Button text="{i18n>Ok}" press="onCloseSLAMptHistoryDialog" id="buttonCloseSLAMptHistoryDialog"/> 
+</buttons>
+
+</Dialog>
+
+</core:FragmentDefinition>
