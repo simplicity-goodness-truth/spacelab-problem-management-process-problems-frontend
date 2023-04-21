@@ -112,6 +112,14 @@ sap.ui.define([
         /* event handlers                                              */
         /* =========================================================== */
 
+        /**
+        * Handler for a situation, when file name is pressed in UploadSet
+        */
+        onFileNamePress: function (oEvent) {
+
+            this._openFileByFileName(oEvent);
+
+        },
 
         /**
        * Processor pressed on SLA IRT History
@@ -336,9 +344,27 @@ sap.ui.define([
         /* =========================================================== */
         /* internal methods                                            */
         /* =========================================================== */
+
         /**
-        * Return a problem from Withdrawn to In Process
+        * Open attachment file by name
         */
+        _openFileByFileName(oEvent) {
+
+            var attachmentPointer = oEvent.getSource().getBindingContext().sPath + "/$value",
+                fullFilePathUrl = sharedLibrary.getODataPath(this) + attachmentPointer,
+                fullFilePathUrlFixed = sharedLibrary.validateAndFixUrl(fullFilePathUrl), item = oEvent.getParameter("item");
+
+            // Initial url property of item of UploadSet is set to documentId and cannot be reached from a browser
+            // However, initially we still need url property set, as without it a file name will not be clickable
+            // Approach: replacing url property of a UploadSet item to a proper URL of an attachment
+
+            item.setProperty("url", fullFilePathUrlFixed);
+
+        },
+
+        /**
+       * Return a problem from Withdrawn to In Process
+       */
         _returnFromWithdrawal: function () {
 
             var sText = this.getResourceBundle().getText("confirmReturnFromWithdrawal"),
