@@ -59,7 +59,7 @@ xmlns:fb="sap.ui.comp.filterbar" xmlns:core="sap.ui.core" height="90%">
                     path: '/ProblemSet',
                     sorter: {
                         path: 'ObjectId',
-                        descending: false
+                        descending: true
                     }
                 }" noDataText="{worklistView>/tableNoDataText}"
 				busyIndicatorDelay="{worklistView>/tableBusyDelay}" 
@@ -72,8 +72,8 @@ xmlns:fb="sap.ui.comp.filterbar" xmlns:core="sap.ui.core" height="90%">
 					</Toolbar>
 				</headerToolbar>
 				<columns>
-					<Column id="problemsTableProblemNumber">
-						<Text text="{i18n>problemNumberTitle}" id="problemsTableProblemNumberLabel" />
+					<Column id="problemsTableProblemNumber">						
+						<Text text="{i18n>problemNumberTitle}" id="problemsTableProblemNumberLabel"  class="sortingAvailable"/>													
 					</Column>
 					<Column id="problemsTableCreatedInternally">
 						<Text text="{i18n>problemCreatedInternallyTitle}" id="problemsTableProblemCreatedInternallyLabel" />
@@ -82,7 +82,7 @@ xmlns:fb="sap.ui.comp.filterbar" xmlns:core="sap.ui.core" height="90%">
 						<Text text="{i18n>requesterCompanyNameTitle}" id="problemsTableProblemCompanyLabel" />
 					</Column>
 					<Column id="problemsTableProblemStatus">
-						<Text text="{i18n>problemStatusTitle}" id="problemsTableProblemStatusLabel" />
+						<Text text="{i18n>problemStatusTitle}" id="problemsTableProblemStatusLabel" class="sortingAvailable" />
 					</Column>
 					<Column id="problemsTableProblemIrt">
 						<Text text="{i18n>SLAIrtPerc}" id="problemsTableSLAIrtPercLabel"/>
@@ -91,7 +91,7 @@ xmlns:fb="sap.ui.comp.filterbar" xmlns:core="sap.ui.core" height="90%">
 						<Text text="{i18n>SLAMptPerc}" id="problemsTableSLAMptPercLabel"/>
 					</Column>
 					<Column id="problemsTableProblemPriority">
-						<Text text="{i18n>problemPriorityTitle}" id="problemsTableProblemPriorityLabel"/>
+						<Text text="{i18n>problemPriorityTitle}" id="problemsTableProblemPriorityLabel" class="sortingAvailable"/>
 					</Column>
 					<Column id="problemsTableProblemDescription">
 						<Text text="{i18n>descriptionTitle}" id="problemsTableDescriptionLabel"/>
@@ -100,7 +100,7 @@ xmlns:fb="sap.ui.comp.filterbar" xmlns:core="sap.ui.core" height="90%">
 						<Text text="{i18n>problemProcessorFullNameTitle}" id="problemsTableProblemProcessorFullNameLabel" />
 					</Column>
 					<Column id="problemsTableProblemCreationDateLabel">
-						<Text text="{i18n>creationDateTitle}" id="problemsTableCreationDateLabel"/>
+						<Text text="{i18n>postingDateTitle}" id="problemsTableCreationDateLabel" class="sortingAvailable"/>
 					</Column>
 				</columns>
 				<items>
@@ -144,7 +144,7 @@ xmlns:fb="sap.ui.comp.filterbar" xmlns:core="sap.ui.core" height="90%">
 							<Text text="{ProcessorFullName}" id="problemsTableProcessorFullName"/>
 						</cells>
 						<cells>
-							<Text text="{CreatedAt}" id="problemsTableCreatedAt"/>
+							<Text text="{ path: 'PostingDate', type: 'sap.ui.model.type.DateTime', formatOptions: { pattern: 'dd.MM.yyyy' }}" id="problemsTablePostingDate"/>
 						</cells>
 					</ColumnListItem>
 				</items>
