@@ -7,7 +7,8 @@ sap.ui.define([
     "sap/ui/export/library",
     "sap/ui/export/Spreadsheet",
     "../utils/sharedLibrary",
-], function (BaseController, JSONModel, formatter, Filter, FilterOperator, exportLibrary, Spreadsheet, sharedLibrary) {
+    "sap/ui/model/Sorter"
+], function (BaseController, JSONModel, formatter, Filter, FilterOperator, exportLibrary, Spreadsheet, sharedLibrary, Sorter) {
     "use strict";
 
     return BaseController.extend("yslpmprprb.controller.Worklist", {
@@ -46,11 +47,97 @@ sap.ui.define([
 
             this.oSystemUser = oExecutionContext.oData;
 
+            // --------------------------------------------
+            // Table sorting  preparation
+            // --------------------------------------------
+
+            var oTable = this.byId("problemsTable");
+            // Listener on header click
+
+            var t = this;
+
+            oTable.addEventDelegate({
+                onAfterRendering: function () {
+                    var oHeader = this.$().find(".sapMListTblHeaderCell"); //Get hold of table header elements
+
+                    for (var i = 0; i < oHeader.length; i++) {
+                        var oID = oHeader[i].id;
+                        t.onHeaderClick(oID);
+                    }
+                }
+            }, oTable);
+
+            // Link to Sorting options fragment
+
+            if (!this.oSortingResponsivePopover) {
+
+                this.oSortingResponsivePopover = sap.ui.xmlfragment("yslpmprprb.view.Sorting", this);
+                this.getView().addDependent(this.oSortingResponsivePopover);
+            }
+
+            // Array of filters supporting sorting
+
+            this.oColumnsSupportingSorting = [];
+            this._prepareColumnsSupportingSorting();
+
+            // Column selected for sorting
+
+            this.columnSelectedForSorting;
+
+
         },
 
         /* =========================================================== */
         /* event handlers                                              */
         /* =========================================================== */
+
+        /**
+         * Sort column ascending
+        */
+        onSortAscending: function () {
+
+            this._sortProblemsTableColumn(false);
+        },
+
+        /**
+        * Sort column descending
+        */
+        onSortDescending: function () {
+
+            this._sortProblemsTableColumn(true);
+        },
+
+        /**
+         * Click on header table performed
+        */
+        onHeaderClick: function (oID) {
+
+            var t = this,
+                oTable = this.byId("problemsTable");
+
+            $("#" + oID).click(function (oEvent) { //Attach Table Header Element Event
+
+                var oTarget = oEvent.currentTarget; //Get hold of Header Element
+
+                var oLabelText = oTarget.childNodes[0].textContent; //Get Column Header text
+
+                if (JSON.stringify(t.oColumnsSupportingSorting).includes(oLabelText)) {
+
+                    // Displaying pop-up for sorting if there are records in table
+
+                    if (oTable.getBinding("items").getLength() > 0) {
+
+                        t.oSortingResponsivePopover.openBy(oTarget);
+
+                        t.columnSelectedForSorting = oLabelText;
+
+                    } // if (oLabelText === t.getResourceBundle().getText("vendorScore"))
+
+                } // if (oLabelText === t.getResourceBundle().getText("vendorScore"))
+
+            });
+
+        },
 
         /**
          * Export to Excel pressed
@@ -160,22 +247,6 @@ sap.ui.define([
 
             this._applySearch(aTableSearchState);
 
-            // if (oEvent.getParameters().refreshButtonPressed) {
-            //     // Search field's 'refresh' button has been pressed.
-            //     // This is visible if you select any main list item.
-            //     // In this case no new search is triggered, we only
-            //     // refresh the list binding.
-            //     this.onRefresh();
-            // } else {
-            //     var aTableSearchState = [];
-            //     var sQuery = oEvent.getParameter("query");
-
-            //     if (sQuery && sQuery.length > 0) {
-            //         aTableSearchState = [new Filter("ObjectId", FilterOperator.Contains, sQuery)];
-            //     }
-            //     this._applySearch(aTableSearchState);
-            // }
-
         },
 
         /**
@@ -191,6 +262,67 @@ sap.ui.define([
         /* =========================================================== */
         /* internal methods                                            */
         /* =========================================================== */
+
+
+        /**
+         * Prepare array of columns, supporting sorting
+        */
+
+        _prepareColumnsSupportingSorting: function () {
+
+            // Array of columns supporting sorting
+
+            this.oColumnsSupportingSorting.push({
+                id: this.getResourceBundle().getText("problemNumberTitle"),
+                field: "ObjectId"
+            });
+
+            this.oColumnsSupportingSorting.push({
+                id: this.getResourceBundle().getText("problemPriorityTitle"),
+                field: "PriorityText"
+            });
+
+            this.oColumnsSupportingSorting.push({
+                id: this.getResourceBundle().getText("problemStatusTitle"),
+                field: "StatusText"
+            });
+
+
+            this.oColumnsSupportingSorting.push({
+                id: this.getResourceBundle().getText("postingDateTitle"),
+                field: "PostingDate"
+            });
+
+
+        },
+
+        /**
+        * Sort problems table column
+        */
+        _sortProblemsTableColumn: function (bDescending) {
+
+            var t = this;
+
+            for (var i in this.oColumnsSupportingSorting) {
+
+                if (this.oColumnsSupportingSorting[i].id == this.columnSelectedForSorting) {
+
+                    var sPath = t.oColumnsSupportingSorting[i].field;
+
+                    var oSorter = new Sorter({
+                        path: sPath,
+                        descending: bDescending
+                    });
+
+                    var oTable = t.getView().byId("problemsTable");
+
+                    oTable.getBinding("items").sort(oSorter);
+                    t.oSortingResponsivePopover.close();
+
+                }
+            }
+        },
+
 
         /**
          * Fill filter for multiple selection

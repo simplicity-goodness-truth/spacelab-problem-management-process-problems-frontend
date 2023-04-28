@@ -112,6 +112,14 @@ sap.ui.define([
         /* event handlers                                              */
         /* =========================================================== */
 
+        /**
+        * Selected file format mismatch
+        */
+        onMediaTypeMismatch: function () {
+
+            sap.m.MessageBox.error(this.getResourceBundle().getText("fileFormatIsNotSupported"));
+
+        },
 
         /**
         * Handler for a situation, when file name is pressed in UploadSet
@@ -345,7 +353,7 @@ sap.ui.define([
         /* =========================================================== */
         /* internal methods                                            */
         /* =========================================================== */
-        
+
         /**
         * Open attachment file by name
         */
@@ -362,7 +370,7 @@ sap.ui.define([
             item.setProperty("url", fullFilePathUrlFixed);
 
         },
-        
+
         /**
         * Return a problem from Withdrawn to In Process
         */
@@ -935,7 +943,7 @@ sap.ui.define([
 
         _uploadProblemAttachments: function (sGuid, callback) {
 
-            var oUploadSet = this.byId("UploadSet"),
+            var oUploadSet = this.byId("problemUploadSet"),
                 sAttachmentUploadURL = "/ProblemSet(guid'" + sGuid + "')/Attachment",
                 oItems = oUploadSet.getIncompleteItems();
 
@@ -954,7 +962,7 @@ sap.ui.define([
                 // Header slug to store a file name
                 var oCustomerHeaderSlug = new sap.ui.core.Item({
                     key: "slug",
-                    text: sFileName
+                    text: encodeURIComponent(sFileName)
                 });
 
                 oUploadSet.addHeaderField(oCustomerHeaderToken);
@@ -1016,7 +1024,7 @@ sap.ui.define([
 
                             sap.m.MessageBox.information(t.getResourceBundle().getText("problemUpdatedSuccessfully", t.ObjectId));
 
-                            t.byId("UploadSet").getBinding("items").refresh();
+                            t.byId("problemUploadSet").getBinding("items").refresh();
 
                             t._refreshApplicationAndSwitchOffEditMode();
 
