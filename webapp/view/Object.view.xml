@@ -189,7 +189,7 @@
                                     </ColumnListItem>
                                     <ColumnListItem id="tableProblemDetailsItemPostingDate">
                                         <cells>
-                                            <Text text="{i18n>postingDateTitle}" width="100%" id="tableProblemDetailsLabelPostingDate" />
+                                            <Text text="{i18n>problemDate}" width="100%" id="tableProblemDetailsLabelPostingDate" />
                                             <Text text="{ path: 'PostingDate', type: 'sap.ui.model.type.DateTime', formatOptions: { pattern: 'dd.MM.yyyy' }}" width="100%" id="tableProblemDetailsFieldPostingDate" />
                                         </cells>
                                     </ColumnListItem>
@@ -293,7 +293,7 @@
                             <VBox id="communicationTabVBox">
                                 <TextArea id="communicationTabTextInputArea" value="" width="100%" rows="15" 
                                     visible="{= ${runtimeModel>/editModeActive} ? true: false }" placeholder="{i18n>enterReplyText}" liveChange="onChangeTextArea"/>
-                                <List id="textsList" showSeparators="Inner" busyIndicatorDelay="0" items="{path: 'Text'}">
+                                <List id="textsList" showSeparators="Inner" busyIndicatorDelay="0" items="{path: 'Text'}" updateFinished="onTextsLoaded">
                                     <FeedListItem id="communicationItem" iconDensityAware="false" showIcon="false" info="{UserText}" timestamp="{DateTimeText}" text="{TextString}" sender="{TdidTxt}" />
                                 </List>
                             </VBox>
@@ -307,7 +307,7 @@
                         showIcons="true"
                         uploadEnabled="{runtimeModel>/editModeActive}"
                         terminationEnabled="true"
-                        fileTypes="jpeg,csv,xls,txt,doc,png,docx,xlsx,jpg,pdf,eml,sar,zip,rar"
+                        fileTypes="jpeg,csv,xls,txt,doc,png,docx,xlsx,jpg,pdf,eml,sar,zip,rar,log"
                         maxFileNameLength="255"
                         maxFileSize="10"
                         mediaTypes="application/pdf,text/plain,application/msword,image/png,text/csv,text/html,application/zip,image/jpeg,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/octet-stream,message/rfc822,application/vnd.sar,application/zip,application/vnd.rar,application/x-rar-compressed,application/x-zip-compressed"
@@ -317,7 +317,8 @@
                         afterItemAdded="onAfterItemAdded"
                         noDataDescription="{i18n>noAttachmentsDescription}"                          
                         noDataText="{i18n>noAttachmentsText}"
-                        mediaTypeMismatch = "onMediaTypeMismatch"                    
+                        mediaTypeMismatch = "onMediaTypeMismatch"     
+                        fileTypeMismatch = "onFileTypeMismatch"               
                     >
                                 <upload:toolbar>
                                     <OverflowToolbar id="OverflowToolbar">
