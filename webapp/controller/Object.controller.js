@@ -8,6 +8,7 @@ const textTypes = Object.freeze(
         static internalNote = 'SU04';
         static solution = 'SUSO';
         static businessConsequences = 'SUBI';
+        static additionalInformation = 'SU30';
     });
 
 const statusNames = Object.freeze(
@@ -31,6 +32,11 @@ const textTypesForStatuses = Object.freeze(
         static solutionProvided = 'SUSO';
         static informationRequested = 'SU01';
 
+    });
+
+const textTypesOfProblemCreation = Object.freeze(
+    class textTypesOfProblemCreation {
+        static textTypes = ['description', 'reproductionSteps', 'businessConsequences'];
     });
 
 const statusesWithMandatoryTextComments = Object.freeze(
@@ -113,6 +119,24 @@ sap.ui.define([
         /* =========================================================== */
 
         /**
+        * Communication tab texts are loaded
+        */
+        onTextsLoaded: function () {
+
+            this._replaceChangeDateIfNeeded();
+
+        },
+
+        /**
+        * Selected file extension mismatch
+        */
+        onFileTypeMismatch: function () {
+
+            sap.m.MessageBox.error(this.getResourceBundle().getText("fileFormatIsNotSupported"));
+
+        },
+
+        /**
         * Selected file format mismatch
         */
         onMediaTypeMismatch: function () {
@@ -173,9 +197,12 @@ sap.ui.define([
         */
         onChangeStatusSelect: function (oEvent) {
 
-
             sharedLibrary.dropFieldState(this, "communicationTabTextInputArea");
             this._setProcessorChangePossibility(oEvent.getSource().getSelectedKey());
+
+            // Setting a proper placeholder for a text area
+
+            this._setReplyTextAreaPlaceholderByStatusCode(oEvent.getSource().getSelectedKey());
 
         },
 
@@ -353,6 +380,108 @@ sap.ui.define([
         /* =========================================================== */
         /* internal methods                                            */
         /* =========================================================== */
+
+        /**
+        * Set reply text area placeholder depending on status
+        */
+
+        _setReplyTextAreaPlaceholderByStatusCode: function (sStatusCode) {
+
+            if (this._isTextMandatoryForStatus(sStatusCode)) {
+
+                this.byId("communicationTabTextInputArea").setPlaceholder(this.getResourceBundle().getText("enterCustomerReplyText"));
+
+            } else {
+                this.byId("communicationTabTextInputArea").setPlaceholder(this.getResourceBundle().getText("enterReplyText"));
+
+            }
+
+
+        },
+
+        /**
+        * Check, if change date replacement is required
+        */
+        _isChangeDateReplacementNeeded: function () {
+
+            // Normally during a creation of a problem we firstly fill all mandatory CRMD_ORDERsADM_H and CRMD_CUSTOMER_H
+            // fields with first POST execution and then we pass texts for business impacts, contact etc
+            // via separated POST method.
+            // That is why change date is always greater than creation date even after a simple fact of creation.
+            // To avoid misunderstanding we will make change date = creation date when problem is in NEW status,
+            // there is no processor assigned, and there are no REPLY (SU01) texts
+
+            if ((this.Status == this._getStatusCode("new")) && !this.ProcessorFullName) {
+
+                var oTextItems = this.byId("textsList").getItems(),
+                    bOnlyMandatoryTextsAreEntered = true,
+                    oView = this.getView(),
+                    oElementBinding = oView.getElementBinding(),
+                    t = this;
+
+                for (var i = 0; i < oTextItems.length; i++) {
+
+                    var sPath = oTextItems[i].getBindingContext().getPath(),
+                        oText = oView.getModel().getObject(sPath);
+
+                    if (textTypesOfProblemCreation.textTypes.indexOf(this._getTextTypeByCode(oText.Tdid)) == '-1') {
+
+                        bOnlyMandatoryTextsAreEntered = false;
+                        break;
+
+                    }
+                }
+
+                if (bOnlyMandatoryTextsAreEntered) {
+
+                    t.byId("tableProblemDetailsFieldChangeDate").setText(t.byId("tableProblemDetailsFieldCreationDate").getText());
+
+                }
+
+            }
+
+        },
+
+        /**
+        * Replace change date, if required
+        */
+        _replaceChangeDateIfNeeded: function () {
+
+            this._isChangeDateReplacementNeeded();
+
+        },
+
+        /**
+        * Get text type name by code 
+        */
+        _getTextTypeByCode: function (sTextCode) {
+
+
+            for (var key in textTypes) {
+
+                if (sTextCode == textTypes[key]) {
+
+                    return key;
+                }
+
+            }
+
+        },
+
+        /*
+        * Get status code
+        */
+        _getStatusCode: function (sStatusName) {
+
+            for (var key in statusNames) {
+
+                if (sStatusName == key) {
+
+                    return statusNames[key];
+
+                }
+            }
+        },
 
         /**
         * Open attachment file by name
