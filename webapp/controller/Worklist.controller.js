@@ -289,7 +289,7 @@ sap.ui.define([
 
 
             this.oColumnsSupportingSorting.push({
-                id: this.getResourceBundle().getText("postingDateTitle"),
+                id: this.getResourceBundle().getText("problemDate"),
                 field: "PostingDate"
             });
 

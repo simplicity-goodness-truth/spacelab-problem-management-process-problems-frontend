@@ -41,7 +41,7 @@ const textTypesOfProblemCreation = Object.freeze(
 
 const statusesWithMandatoryTextComments = Object.freeze(
     class statusesWithMandatoryTextComments {
-        static statuses = ['customerAction', 'solutionProvided', 'approved', 'informationRequested', 'withdrawn'];
+        static statuses = ['customerAction', 'solutionProvided', 'informationRequested', 'withdrawn'];
     });
 
 const statusesWithPossibleProccessorChange = Object.freeze(
