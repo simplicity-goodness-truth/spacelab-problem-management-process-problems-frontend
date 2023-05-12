@@ -100,7 +100,10 @@ xmlns:fb="sap.ui.comp.filterbar" xmlns:core="sap.ui.core" height="90%">
 						<Text text="{i18n>problemProcessorFullNameTitle}" id="problemsTableProblemProcessorFullNameLabel" />
 					</Column>
 					<Column id="problemsTableProblemCreationDateLabel">
-						<Text text="{i18n>postingDateTitle}" id="problemsTableCreationDateLabel" class="sortingAvailable"/>
+						<Text text="{i18n>problemDate}" id="problemsTableCreationDateLabel" class="sortingAvailable"/>
+					</Column>
+					<Column id="problemsTableProblemCreationTimestampLabel">
+						<Text text="{i18n>creationDateTitle}" id="problemsTableCreationTimestampLabel"/>
 					</Column>
 				</columns>
 				<items>
@@ -144,7 +147,10 @@ xmlns:fb="sap.ui.comp.filterbar" xmlns:core="sap.ui.core" height="90%">
 							<Text text="{ProcessorFullName}" id="problemsTableProcessorFullName"/>
 						</cells>
 						<cells>
-							<Text text="{ path: 'PostingDate', type: 'sap.ui.model.type.DateTime', formatOptions: { pattern: 'dd.MM.yyyy' }}" id="problemsTablePostingDate"/>
+							<Text text="{ path: 'PostingDate', type: 'sap.ui.model.type.DateTime', formatOptions: { pattern: 'dd.MM.yyyy' }}" id="problemsTablePostingDate"/> 							
+						</cells>
+						<cells>
+							<Text text="{CreatedAt}" id="problemsTableCreationTimestampValue"/>
 						</cells>
 					</ColumnListItem>
 				</items>
