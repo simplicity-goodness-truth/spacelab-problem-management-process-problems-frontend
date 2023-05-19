@@ -121,7 +121,7 @@ sap.ui.define([
 
                 var oLabelText = oTarget.childNodes[0].textContent; //Get Column Header text
 
-                if (JSON.stringify(t.oColumnsSupportingSorting).includes(oLabelText)) {
+                if ((JSON.stringify(t.oColumnsSupportingSorting).includes(oLabelText)) && oLabelText.length > 0 ) {
 
                     // Displaying pop-up for sorting if there are records in table
 
