@@ -37,20 +37,20 @@ xmlns:fb="sap.ui.comp.filterbar" xmlns:core="sap.ui.core" height="90%">
 			</fb:FilterGroupItem>
 			<fb:FilterGroupItem groupName="filterProcessor" name="A" partOfCurrentVariant="true" visibleInFilterBar="true"
 			label="{i18n>problemProcessorFullNameTitle}" id="filterProcessor">
-			<fb:control>
-				<MultiComboBox id="processorFilter" width="350px" items="{
+				<fb:control>
+					<MultiComboBox id="processorFilter" width="350px" items="{
 				path: '/ProcessorSet',
 				sorter: { path: 'FullName' }
 				}">
-					<core:Item key="{BusinessPartner}" text="{FullName}" id="processorFilterItem" />
-				</MultiComboBox>
-			</fb:control>
-		</fb:FilterGroupItem>
-		<fb:FilterGroupItem groupName="filterPostingDate" name="A" partOfCurrentVariant="true" visibleInFilterBar="true" label="{i18n>postingDateTitle}">
-			<fb:control>
-				<DateRangeSelection id="dateRangeSelector" width="auto"/>
-			</fb:control>
-		</fb:FilterGroupItem>
+						<core:Item key="{BusinessPartner}" text="{FullName}" id="processorFilterItem" />
+					</MultiComboBox>
+				</fb:control>
+			</fb:FilterGroupItem>
+			<fb:FilterGroupItem groupName="filterPostingDate" name="A" partOfCurrentVariant="true" visibleInFilterBar="true" label="{i18n>postingDateTitle}">
+				<fb:control>
+					<DateRangeSelection id="dateRangeSelector" width="auto"/>
+				</fb:control>
+			</fb:FilterGroupItem>
 		</fb:filterGroupItems>
 	</fb:FilterBar>
 	<semantic:SemanticPage id="page" headerPinnable="false" toggleHeaderOnTitleClick="false">
@@ -72,45 +72,48 @@ xmlns:fb="sap.ui.comp.filterbar" xmlns:core="sap.ui.core" height="90%">
 					</Toolbar>
 				</headerToolbar>
 				<columns>
-					<Column id="problemsTableProblemNumber">						
-						<Text text="{i18n>problemNumberTitle}" id="problemsTableProblemNumberLabel"  class="sortingAvailable"/>													
+					<Column id="problemsTableCreatedInternally" width="30px">
+						<Text id="problemsTableProblemCreatedInternallyLabel" />
 					</Column>
-					<Column id="problemsTableCreatedInternally">
-						<Text text="{i18n>problemCreatedInternallyTitle}" id="problemsTableProblemCreatedInternallyLabel" />
+					<Column id="problemsTableProblemNumber" width="7%">
+						<Text text="{i18n>problemNumberTitle}" id="problemsTableProblemNumberLabel"  class="sortingAvailable"/>
 					</Column>
 					<Column id="problemsTableCompany">
-						<Text text="{i18n>requesterCompanyNameTitle}" id="problemsTableProblemCompanyLabel" />
+						<Text text="{i18n>requesterCompanyNameTitle}" id="problemsTableProblemCompanyLabel"  class="smallText" />
 					</Column>
-					<Column id="problemsTableProblemStatus">
+					<Column id="problemsTableProduct" width="12%">
+						<Text text="{i18n>productTitle}" id="problemsTableProblemProductLabel" class="smallText"/>
+					</Column>
+					<Column id="problemsTableProblemStatus" width="7%">
 						<Text text="{i18n>problemStatusTitle}" id="problemsTableProblemStatusLabel" class="sortingAvailable" />
 					</Column>
-					<Column id="problemsTableProblemIrt">
-						<Text text="{i18n>SLAIrtPerc}" id="problemsTableSLAIrtPercLabel"/>
+					<Column id="problemsTableProblemIrt" width="6%">
+						<Text text="{i18n>SLAIrtPerc}" id="problemsTableSLAIrtPercLabel" class="smallText"/>
 					</Column>
-					<Column id="problemsTableProblemMpt">
-						<Text text="{i18n>SLAMptPerc}" id="problemsTableSLAMptPercLabel"/>
+					<Column id="problemsTableProblemMpt" width="6%">
+						<Text text="{i18n>SLAMptPerc}" id="problemsTableSLAMptPercLabel" class="smallText"/>
 					</Column>
-					<Column id="problemsTableProblemPriority">
+					<Column id="problemsTableProblemPriority" width="7%">
 						<Text text="{i18n>problemPriorityTitle}" id="problemsTableProblemPriorityLabel" class="sortingAvailable"/>
 					</Column>
+					<Column id="problemsTableProblemShowPriorities" width="7%">
+						<Text text="{i18n>problemShowPrioritiesTitle}" id="problemsTableProblemShowPrioritiesLabel" class="smallText"/>
+					</Column>
 					<Column id="problemsTableProblemDescription">
-						<Text text="{i18n>descriptionTitle}" id="problemsTableDescriptionLabel"/>
+						<Text text="{i18n>descriptionTitle}" id="problemsTableDescriptionLabel" class="smallText"/>
 					</Column>
 					<Column id="problemsTableProblemProcessorFullName">
-						<Text text="{i18n>problemProcessorFullNameTitle}" id="problemsTableProblemProcessorFullNameLabel" />
+						<Text text="{i18n>problemProcessorFullNameTitle}" id="problemsTableProblemProcessorFullNameLabel" class="smallText"/>
 					</Column>
-					<Column id="problemsTableProblemCreationDateLabel">
+					<Column id="problemsTableProblemCreationDateLabel" width="8%">
 						<Text text="{i18n>problemDate}" id="problemsTableCreationDateLabel" class="sortingAvailable"/>
 					</Column>
-					<Column id="problemsTableProblemCreationTimestampLabel">
-						<Text text="{i18n>creationDateTitle}" id="problemsTableCreationTimestampLabel"/>
+					<Column id="problemsTableProblemCreationTimestampLabel" width="10%">
+						<Text text="{i18n>creationDateTitle}" id="problemsTableCreationTimestampLabel" class="smallText"/>
 					</Column>
 				</columns>
 				<items>
 					<ColumnListItem type="Navigation" press=".onPress" id="problemsTableColumnListItem">
-						<cells>
-							<Text text="{ObjectId}" id="problemsTableObjectId"/>
-						</cells>
 						<cells>
 							<ObjectStatus
 							state="{= ${CreatedInternally} ? 'Success' : 'Error' }" 
@@ -118,39 +121,53 @@ xmlns:fb="sap.ui.comp.filterbar" xmlns:core="sap.ui.core" height="90%">
 							id="CreatedInternallyObjectStatus"/>
 						</cells>
 						<cells>
-							<Text text="{CompanyName}" id="problemsTablCompanyName"/>
+							<Text text="{ObjectId}" id="problemsTableObjectId" class="smallText"/>
 						</cells>
 						<cells>
-							<Text text="{StatusText}" id="problemsTableStatusText"/>
+							<Text text="{CompanyName}" id="problemsTableCompanyName" class="smallText"/>
+						</cells>
+						<cells>
+							<VBox>
+							<Text text="{ProductName} " id="problemsTableProductName" class="smallText"/>
+							<Text text="{ProductText}" id="problemsTableProductText" class="smallText"/>
+
+							</VBox>
+						</cells>
+						<cells>
+							<Text text="{StatusText}" id="problemsTableStatusText" class="smallText"/>
 						</cells>
 						<cells>
 							<ObjectStatus 
-								text="{=  ${IrtSLAOnHold}  ? ${StoredSLAIrtPerc} : ${SLAIrtPerc} } %" width="100%"			
+								text="{=  ${IrtSLAOnHold}  ? ${StoredSLAIrtPerc} : ${SLAIrtPerc} } %" width="100%"	class="smallText"		
 								state="{= ${IrtSLAOnHold}  ? 'Information' : ${SLAIrtIconBsp} === 'NOTDUE' ? 'Success' : 'Error' }" 
 								icon="{= ${FirstReactionDate}  ? 'sap-icon://complete' : ${IrtSLAOnHold} ? 'sap-icon://pause' : 'sap-icon://pending' }"
 								id="SLAIrtPercObjectStatus"/>
 						</cells>
 						<cells>
 							<ObjectStatus								
-								text="{SLAMptPerc} %"			
+								text="{SLAMptPerc} %"		
+								class="smallText"	
 								state="{= ${MptSLAOnHold}  ? 'Information' : ${SLAMptIconBsp} === 'NOTDUE' ? 'Success' : 'Error' }" 
 								icon="{= ${Status} === 'E0008' || ${Status} === 'E0010'? 'sap-icon://complete' : ${MptSLAOnHold} ? 'sap-icon://pause' : 'sap-icon://pending' }"
 								id="SLAMptPercObjectStatus"/>
 						</cells>
 						<cells>
-							<Text text="{PriorityText}" id="problemsTablePriorityText" />
+							<Text text="{PriorityText}" id="problemsTablePriorityText" class="smallText" />
 						</cells>
 						<cells>
-							<Text text="{Description}" id="problemsTableDescription"/>
+							<Text  text="{= ${ShowPriorities} ? ${i18n>yes} : ${i18n>no} }"  id="problemsTableShowPrioritiesText" class="smallText" />
 						</cells>
 						<cells>
-							<Text text="{ProcessorFullName}" id="problemsTableProcessorFullName"/>
+							<Text text="{Description}" id="problemsTableDescription" class="smallText" maxLines="2"/> 
 						</cells>
 						<cells>
-							<Text text="{ path: 'PostingDate', type: 'sap.ui.model.type.DateTime', formatOptions: { pattern: 'dd.MM.yyyy' }}" id="problemsTablePostingDate"/> 							
+							<Text text="{ProcessorFullName}" id="problemsTableProcessorFullName" class="smallText"/>
 						</cells>
 						<cells>
-							<Text text="{CreatedAt}" id="problemsTableCreationTimestampValue"/>
+							<Text text="{ path: 'PostingDate', type: 'sap.ui.model.type.DateTime', formatOptions: { pattern: 'dd.MM.yyyy' }}" id="problemsTablePostingDate" class="smallText"/>
+						</cells>
+						<cells>
+							<Text text="{CreatedAt}" id="problemsTableCreationTimestampValue" class="smallText"/>
 						</cells>
 					</ColumnListItem>
 				</items>

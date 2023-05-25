@@ -115,6 +115,13 @@ sap.ui.define([
             // Prepare empty models (which will be properly filled during a runtime)
 
             this._prepareEmptyModels();
+
+            // Disable drag and drop for UploadSet, as it is 
+            // not working properly, when not supported
+            // file type/media is supported
+
+            this._disableUploadSetDragAndDrop();
+
         },
         /* =========================================================== */
         /* event handlers                                              */
@@ -136,6 +143,9 @@ sap.ui.define([
 
             sap.m.MessageBox.error(this.getResourceBundle().getText("fileFormatIsNotSupported"));
 
+            var oUploadSet = this.byId("problemUploadSet");
+            oUploadSet.removeAllIncompleteItems();
+
         },
 
         /**
@@ -144,6 +154,9 @@ sap.ui.define([
         onMediaTypeMismatch: function () {
 
             sap.m.MessageBox.error(this.getResourceBundle().getText("fileFormatIsNotSupported"));
+
+            var oUploadSet = this.byId("problemUploadSet");
+            oUploadSet.removeAllIncompleteItems();
 
         },
 
@@ -358,6 +371,7 @@ sap.ui.define([
             this.Status = oObject.Status;
             this.ProductGuid = oObject.ProductGuid;
             this.Priority = oObject.Priority;
+            this.TotalProcessingTimeInMinutes = oObject.TotalProcessingTimeInMinutes;
 
             this._setAvailableStatuses(oObject.Status);
 
@@ -366,6 +380,8 @@ sap.ui.define([
             oViewModel.setProperty("/busy", false);
 
             this._resetEditMode();
+
+            this._setTotalProcessingTimeValue();
 
         },
 
@@ -384,6 +400,50 @@ sap.ui.define([
         /* =========================================================== */
         /* internal methods                                            */
         /* =========================================================== */
+
+        /*
+        * Set total processing time value
+        */
+        _setTotalProcessingTimeValue: function () {
+
+            var sProcTimeText;
+
+            if (this.TotalProcessingTimeInMinutes > 0) {
+
+                var totalProcessingTimeHours = Math.floor(this.TotalProcessingTimeInMinutes / 60),
+                    totalProcessingTimeMinutes = this.TotalProcessingTimeInMinutes % 60;
+
+                sProcTimeText = totalProcessingTimeHours + " " + this.getResourceBundle().getText("hours") + " " +
+                    totalProcessingTimeMinutes + " " + this.getResourceBundle().getText("minutes");
+
+            } else {
+
+                sProcTimeText = "0" + " " + this.getResourceBundle().getText("hours") + " " +
+                    "0" + " " + this.getResourceBundle().getText("minutes");
+            }
+
+            this.byId("tableProblemDetailsFieldTotalProcTime").setText(sProcTimeText);
+
+        },
+
+        /*
+        * Disable drag and drop function for UploadSet
+        */
+        _disableUploadSetDragAndDrop: function () {
+
+            this.getView().byId("problemUploadSet").addDelegate({
+                ondragenter: function (oEvent) {
+                    oEvent.stopPropagation()
+                },
+                ondragover: function (oEvent) {
+                    oEvent.stopPropagation()
+                },
+                ondrop: function (oEvent) {
+                    oEvent.stopPropagation()
+                }
+            }, true);
+
+        },
 
         /**
         * Set reply text area placeholder depending on status

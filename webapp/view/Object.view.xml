@@ -1,10 +1,11 @@
 <mvc:View
     controllerName="zslpmprprb.controller.Object"
-    xmlns="sap.m"
+    xmlns="sap.m"    
     xmlns:mvc="sap.ui.core.mvc"
     xmlns:semantic="sap.f.semantic"
     xmlns:upload="sap.m.upload"
-    xmlns:core="sap.ui.core">
+    xmlns:core="sap.ui.core"
+    xmlns:table="sap.ui.table">
     <semantic:SemanticPage
         id="detailPage"
         headerPinnable="false"
@@ -146,6 +147,10 @@
                                             <Text text="{ path: 'Description'}" width="100%" id="tableProblemDetailsFieldDescription" />
                                         </cells>
                                     </ColumnListItem>
+                                    <ColumnListItem id="tableProblemDetailsShowPriorities">
+                                        <Text text="{i18n>problemShowPrioritiesTitle}" id="tableProblemDetailsShowPrioritiesLabel"/>
+                                        <Text  text="{= ${ShowPriorities} ? ${i18n>yes} : ${i18n>no} }"  id="tableProblemDetailsFieldShowPriorities"  />
+                                    </ColumnListItem>
                                     <!-- <ColumnListItem id="tableProblemDetailsItemCategory">
                                         <cells>
                                             <Text text="{i18n>categoryTitle}" width="100%" id="tableProblemDetailsLabelCatSchema" />
@@ -197,6 +202,18 @@
                                         <cells>
                                             <Text text="{i18n>creationDateTitle}" width="100%" id="tableProblemDetailsLabelCreationDate" />
                                             <Text text="{CreatedAt}" width="100%" id="tableProblemDetailsFieldCreationDate" />
+                                        </cells>
+                                    </ColumnListItem>
+                                    <ColumnListItem id="tableProblemDetailsItemTotalProcTime">
+                                        <cells>
+                                            <Text text="{i18n>totalProcTimeTitle}" width="100%" id="tableProblemDetailsLabelTotalProcTime" />
+                                            <Text width="100%" id="tableProblemDetailsFieldTotalProcTime" />
+                                        </cells>
+                                    </ColumnListItem>
+                                    <ColumnListItem id="tableProblemDetailsItemCloseDate" visible="{= ${Closed} ? true : false}">
+                                        <cells>
+                                            <Text text="{i18n>closeDateTitle}" width="100%" id="tableProblemDetailsLabelCloseDate" />
+                                            <Text text="{ChangedAt}" width="100%" id="tableProblemDetailsFieldCloseDate" />
                                         </cells>
                                     </ColumnListItem>
                                     <ColumnListItem id="tableProblemDetailsItemChangeDate">
@@ -294,7 +311,9 @@
                                 <TextArea id="communicationTabTextInputArea" value="" width="100%" rows="15" 
                                     visible="{= ${runtimeModel>/editModeActive} ? true: false }" placeholder="{i18n>enterReplyText}" liveChange="onChangeTextArea"/>
                                 <List id="textsList" showSeparators="Inner" busyIndicatorDelay="0" items="{path: 'Text'}" updateFinished="onTextsLoaded">
-                                    <FeedListItem id="communicationItem" iconDensityAware="false" showIcon="false" info="{UserText}" timestamp="{DateTimeText}" text="{TextString}" sender="{TdidTxt}" />
+                                    <FeedListItem id="communicationItem" iconDensityAware="false" showIcon="false" 
+                                        info="{TdidTxt}" timestamp="{ path: 'DateTimeText', type: 'sap.ui.model.type.DateTime', formatOptions: { pattern: 'dd.MM.yyyy HH:mm:ss' }}"
+                                            text="{TextString}" sender="{UserText}" />
                                 </List>
                             </VBox>
                         </content>
@@ -330,6 +349,63 @@
                                     visibleEdit="false" visibleRemove="false" enabledRemove="false" openPressed="onFileNamePress"  />
                                 </upload:items>
                             </upload:UploadSet>
+                        </content>
+                    </IconTabFilter>
+                    <IconTabFilter id="tabProblemHistoryLog" icon="sap-icon://history" tooltip="{i18n>problemHistoryLog}" text="{i18n>problemHistoryLog}">
+                        <content>                        
+                            <table:TreeTable
+                            id="treeTable"
+                            selectionMode="None"
+                            enableColumnReordering="false"                            
+                            rows="{
+                                path: 'ProblemHistoryHierarchy',
+                                parameters: {
+                                    countMode: 'Inline',
+                                    useServersideApplicationFilters: false, 
+                                    operationMode:'Client', 
+                                    autoExpandMode:'Bundled',
+                                    treeAnnotationProperties: {
+                                        hierarchyLevelFor: 'Hierarchylevel',
+                                        hierarchyNodeFor: 'Nodeid',
+                                        hierarchyParentNodeFor: 'Parentnodeid',
+                                        hierarchyDrillStateFor: 'Drillstate'
+                                    }
+                                }
+                            }">
+
+                                <table:columns>
+                                    <table:Column label="{i18n>problemHistoryLogChangeDate}" width="14%" id='problemHistoryLogChangeDateColumn'>
+                                        <table:template>
+                                            <Text id="problemHistoryLogChangeDateText" text="{ path: 'ChangeDate', type: 'sap.ui.model.type.DateTime', formatOptions: { pattern: 'dd.MM.yyyy' }}" />
+                                        </table:template>
+                                    </table:Column>
+                                    <table:Column label="{i18n>problemHistoryLogChangeTime}" width="8%" id='problemHistoryLogChangeTimeColumn'>
+                                        <table:template>
+                                            <Text id="problemHistoryLogChangeTimeText" text="{ path: 'ChangeTime', type: 'sap.ui.model.odata.type.Time', formatOptions: { pattern: 'HH:mm:ss' }}" />
+                                        </table:template>
+                                    </table:Column>
+                                    <table:Column label="{i18n>problemHistoryLogEvent}" width="10%" id='problemHistoryLogEventColumn'>
+                                        <table:template>
+                                            <Text id="problemHistoryLogEventText" text="{= ${Event} === 'C' ? ${i18n>problemHistoryLogCreate} : ${i18n>problemHistoryLogUpdate} }" />
+                                        </table:template>
+                                    </table:Column>
+                                    <table:Column label="{i18n>problemHistoryLogUsername}" width="12%"  id='problemHistoryLogUsernameColumn'>
+                                        <table:template>
+                                            <Text text="{Username}" id="problemHistoryLogUsernameText"/>
+                                        </table:template>
+                                    </table:Column>
+                                    <table:Column label="{i18n>problemHistoryLogField}" width="25%" id='problemHistoryLogFieldColumn'>
+                                        <table:template>
+                                            <Text text="{Field}" id="problemHistoryLogFieldText" />
+                                        </table:template>
+                                    </table:Column>
+                                    <table:Column label="{i18n>problemHistoryLogValue}" width="31%" id='problemHistoryLogValueColumn'>
+                                        <table:template>
+                                            <Text text="{Value}" id="problemHistoryLogValueText" />
+                                        </table:template>
+                                    </table:Column>
+                                </table:columns>
+                            </table:TreeTable>
                         </content>
                     </IconTabFilter>
                 </items>
