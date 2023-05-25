@@ -4,7 +4,8 @@
     xmlns:mvc="sap.ui.core.mvc"
     xmlns:semantic="sap.f.semantic"
     xmlns:upload="sap.m.upload"
-    xmlns:core="sap.ui.core">
+    xmlns:core="sap.ui.core"
+    xmlns:table="sap.ui.table">
     <semantic:SemanticPage
         id="detailPage"
         headerPinnable="false"
@@ -145,6 +146,10 @@
                                             <Text text="{i18n>descriptionTitle}" width="100%" id="tableProblemDetailsLabelDescription" />
                                             <Text text="{ path: 'Description'}" width="100%" id="tableProblemDetailsFieldDescription" />
                                         </cells>
+                                    </ColumnListItem>
+                                    <ColumnListItem id="tableProblemDetailsShowPriorities">
+                                        <Text text="{i18n>problemShowPrioritiesTitle}" id="tableProblemDetailsShowPrioritiesLabel"/>
+                                        <Text  text="{= ${ShowPriorities} ? ${i18n>yes} : ${i18n>no} }"  id="tableProblemDetailsFieldShowPriorities"  />
                                     </ColumnListItem>
                                     <!-- <ColumnListItem id="tableProblemDetailsItemCategory">
                                         <cells>
@@ -343,6 +348,63 @@
                                     visibleEdit="false" visibleRemove="false" enabledRemove="false" openPressed="onFileNamePress"  />
                                 </upload:items>
                             </upload:UploadSet>
+                        </content>
+                    </IconTabFilter>
+                    <IconTabFilter id="tabProblemHistoryLog" icon="sap-icon://history" tooltip="{i18n>problemHistoryLog}" text="{i18n>problemHistoryLog}">
+                        <content>
+                            <table:TreeTable
+                            id="treeTable"
+                            selectionMode="None"
+                            enableColumnReordering="false"                            
+                            rows="{
+                                path: 'ProblemHistoryHierarchy',
+                                parameters: {
+                                    countMode: 'Inline',
+
+                                    useServersideApplicationFilters: false, 
+                                    operationMode:'Client', 
+                                    autoExpandMode:'Bundled',
+                                    treeAnnotationProperties: {
+                                        hierarchyLevelFor: 'Hierarchylevel',
+                                        hierarchyNodeFor: 'Nodeid',
+                                        hierarchyParentNodeFor: 'Parentnodeid',
+                                        hierarchyDrillStateFor: 'Drillstate'
+                                    }
+                                }
+                            }">
+                                <table:columns>
+                                    <table:Column label="{i18n>problemHistoryLogChangeDate}" width="14%" id='problemHistoryLogChangeDateColumn'>
+                                        <table:template>
+                                            <Text id="problemHistoryLogChangeDateText" text="{ path: 'ChangeDate', type: 'sap.ui.model.type.DateTime', formatOptions: { pattern: 'dd.MM.yyyy' }}" />
+                                        </table:template>
+                                    </table:Column>
+                                    <table:Column label="{i18n>problemHistoryLogChangeTime}" width="8%" id='problemHistoryLogChangeTimeColumn'>
+                                        <table:template>
+                                            <Text id="problemHistoryLogChangeTimeText" text="{ path: 'ChangeTime', type: 'sap.ui.model.odata.type.Time', formatOptions: { pattern: 'HH:mm:ss' }}" />
+                                        </table:template>
+                                    </table:Column>
+                                    <table:Column label="{i18n>problemHistoryLogEvent}" width="10%" id='problemHistoryLogEventColumn'>
+                                        <table:template>
+                                            <Text id="problemHistoryLogEventText" text="{= ${Event} === 'C' ? ${i18n>problemHistoryLogCreate} : ${i18n>problemHistoryLogUpdate} }" />
+                                        </table:template>
+                                    </table:Column>
+                                    <table:Column label="{i18n>problemHistoryLogUsername}" width="12%"  id='problemHistoryLogUsernameColumn'>
+                                        <table:template>
+                                            <Text text="{Username}" id="problemHistoryLogUsernameText"/>
+                                        </table:template>
+                                    </table:Column>
+                                    <table:Column label="{i18n>problemHistoryLogField}" width="25%" id='problemHistoryLogFieldColumn'>
+                                        <table:template>
+                                            <Text text="{Field}" id="problemHistoryLogFieldText" />
+                                        </table:template>
+                                    </table:Column>
+                                    <table:Column label="{i18n>problemHistoryLogValue}" width="31%" id='problemHistoryLogValueColumn'>
+                                        <table:template>
+                                            <Text text="{Value}" id="problemHistoryLogValueText" />
+                                        </table:template>
+                                    </table:Column>
+                                </table:columns>
+                            </table:TreeTable>
                         </content>
                     </IconTabFilter>
                 </items>
