@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<core:FragmentDefinition xmlns:core="sap.ui.core" xmlns="sap.m"  xmlns:f="sap.ui.layout.form">
+    <Dialog id="SLAIrtHistoryDialog" title="{i18n>selectDateAndTime}">
+        <VBox class="sapUiTinyMargin">
+            <FlexBox direction="Column" alignItems="Center">
+                <DateTimePicker
+                    id="DTP1"
+                    placeholder="{i18n>selectDateAndTime}"
+                    
+                    value= "{
+                        'path': '/SLAIrtTimestamp',
+                        'type': 'sap.ui.model.type.DateTime',
+                        'formatOptions': {
+                            'style': 'short'
+                        }
+                    }"
+                    />
+            </FlexBox>
+        </VBox>
+        <buttons>
+            <Button text="{i18n>Ok}" press="onSelectDateTime" id="buttonDateTimeSelected" />
+            <Button text="{i18n>Cancel}" press="onCloseDateTimeSelectorDialog" id="buttonDateTimeSelectorClosure"/>
+        </buttons>
+    </Dialog>
+</core:FragmentDefinition>

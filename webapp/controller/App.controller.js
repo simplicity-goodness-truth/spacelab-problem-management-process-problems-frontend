@@ -13,26 +13,26 @@ sap.ui.define([
 
             // apply content density mode to root view
             this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());
-    
+
 
             // Getting execution context
 
             this._getExecutionContext(function () {
 
-               // Prepare model to use in other parts of application
+                // Prepare model to use in other parts of application
 
                 var oExecutionContext = new sap.ui.model.json.JSONModel({
 
                     SystemUser: t.oSystemUser
 
                 });
-                        
+
                 t.getOwnerComponent().setModel(oExecutionContext, "executionContext");
             });
 
             // Preparing additional models
 
-            this._getListOfProcessors(function() {
+            this._getListOfProcessors(function () {
 
                 var oProcessorsList = new sap.ui.model.json.JSONModel({
 
@@ -44,6 +44,20 @@ sap.ui.define([
 
             });
 
+             // Getting application configuration
+
+             this._getApplicationConfiguration(function () {
+
+                var oApplicationConfiguration = new sap.ui.model.json.JSONModel({
+
+                    ApplicationConfiguration: t.oApplicationConfiguration
+
+                });
+
+                t.getOwnerComponent().setModel(oApplicationConfiguration, "applicationConfiguration");
+
+            });
+
         },
 
         /* =========================================================== */
@@ -51,18 +65,34 @@ sap.ui.define([
         /* =========================================================== */
 
         /**
-        * Get list of possible processors
+        * Get application configuration
         */
-        _getListOfProcessors: function(callback) {
+        _getApplicationConfiguration: function (callback) {
 
-            
             var t = this,
                 sErroneousExecutionText = this.getResourceBundle().getText("oDataModelReadFailure");
 
-            sharedLibrary.readEntity("Processor", sErroneousExecutionText, this, false, false,  function (oData) {
-                    t.oProcessorsList = oData.results;                    
-                    return callback();
-                    
+            sharedLibrary.readEntityWithFilter("FrontendConfiguration", "Application eq 'zslpmprprb'", sErroneousExecutionText, this, false, true, function (oData) {
+                t.oApplicationConfiguration = oData;
+                return callback();
+
+            });
+        },
+
+
+        /**
+        * Get list of possible processors
+        */
+        _getListOfProcessors: function (callback) {
+
+
+            var t = this,
+                sErroneousExecutionText = this.getResourceBundle().getText("oDataModelReadFailure");
+
+            sharedLibrary.readEntity("Processor", sErroneousExecutionText, this, false, false, function (oData) {
+                t.oProcessorsList = oData.results;
+                return callback();
+
             });
 
         },
@@ -75,21 +105,21 @@ sap.ui.define([
             var t = this,
                 sErroneousExecutionText = this.getResourceBundle().getText("oDataModelReadFailure");
 
-            sharedLibrary.readEntity("SystemUser", sErroneousExecutionText, this, false, true,  function (oData) {
-                    t.oSystemUser = oData.results[0];    
-                    
-                    if (!t.oSystemUser.AuthorizedToReadProblems 
-                        || !t.oSystemUser.AuthorizedToUpdateProblem )  {
+            sharedLibrary.readEntity("SystemUser", sErroneousExecutionText, this, false, true, function (oData) {
+                t.oSystemUser = oData.results[0];
 
-                        sap.m.MessageBox.error(t.getResourceBundle().getText("userNotAuthorizedToRunThisApp"));
-    
-                    } else {
-    
-                        return callback();
-    
-                    }
-                    
-                    
+                if (!t.oSystemUser.AuthorizedToReadProblems
+                    || !t.oSystemUser.AuthorizedToUpdateProblem) {
+
+                    sap.m.MessageBox.error(t.getResourceBundle().getText("userNotAuthorizedToRunThisApp"));
+
+                } else {
+
+                    return callback();
+
+                }
+
+
             });
         },
     });

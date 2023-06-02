@@ -122,10 +122,52 @@ sap.ui.define([
 
             this._disableUploadSetDragAndDrop();
 
+            // Date and time selector trigger property
+
+            this.dateTimeSelectionTrigger;
+
+            // Set IRT SLA manual editing possibility
+
+            this._setIRTSLAManualEditingPossibility();
+
         },
         /* =========================================================== */
         /* event handlers                                              */
         /* =========================================================== */
+
+        /**
+        * Date and time have been selected in selector dialog
+        */
+        onSelectDateTime: function (oEvent) {
+
+            var dSelectedDateTime = this.oDateTimeSelectorDialog.getContent()[0].getItems()[0].getItems()[0].getProperty("dateValue").getTime();
+
+            this._destroyDateTimeDialog();
+
+            this._processSLAManualChange(dSelectedDateTime);
+
+        },
+
+        /**
+        * Close date and time selector dialog
+        */
+        onCloseDateTimeSelectorDialog: function () {
+
+            this._destroyDateTimeDialog();
+
+
+        },
+
+        /**
+        * IRT Manual change is pressed
+        */
+        onPressIrtManualChange: function () {
+
+            this.dateTimeSelectionTrigger = 'tableProblemDetailsFieldSLAIrtTimestamp';
+
+            this._openDateTimeSelectorDialog();
+
+        },
 
         /**
         * Communication tab texts are loaded
@@ -400,6 +442,89 @@ sap.ui.define([
         /* =========================================================== */
         /* internal methods                                            */
         /* =========================================================== */
+
+        /*
+        * Get application configuration parameters
+        */
+        _getApplicationConfigurationParameters: function () {
+
+            var oApplicationConfiguration = this.getOwnerComponent().getModel("applicationConfiguration");
+            return oApplicationConfiguration.oData.ApplicationConfiguration.results;
+
+        },
+
+        /*
+        * Set IRT SLA manual editing possibility 
+        */
+        _setIRTSLAManualEditingPossibility: function () {
+
+            var t = this,
+                oApplicationConfigurationParameters = this._getApplicationConfigurationParameters(),
+                oIRTSLAModel = new JSONModel({
+                    manualEditPossibility: false
+                });
+
+            // Getting data from configuration
+
+            for (var i = 0; i < oApplicationConfigurationParameters.length; i++) {
+
+                if ((oApplicationConfigurationParameters[i].Param.indexOf('PROCESSPROBLEM_SLA_IRT_MANUAL_EDIT') > 0) &&
+                    (oApplicationConfigurationParameters[i].Value === 'X')) {
+
+                    oIRTSLAModel.oData.manualEditPossibility = true;
+
+                }
+            }
+            this.byId("buttonChangeIRTManually").setModel(oIRTSLAModel, "IRTSLAModel");
+        },
+
+        /**
+        * Process manual SLA change
+        */
+        _processSLAManualChange: function (dSelectedDateTime) {
+
+            var t = this;
+            if (dSelectedDateTime) {
+
+                switch (this.dateTimeSelectionTrigger) {
+
+                    case "tableProblemDetailsFieldSLAIrtTimestamp":
+
+                        // IRT SLA has been changed manually 
+
+                        var oPayload = {},
+                            oTextPayload = {};
+
+                        oPayload.InputTimestamp = new Date(dSelectedDateTime);
+                        oPayload.SLAIrtStatus = 'MANCH';
+
+                        t._saveProblem(oPayload, oTextPayload);
+
+                        break;
+
+                    default:
+                        break;
+                }
+
+
+            }
+
+        },
+
+        /**
+        * Open date and time selector dialog
+        */
+        _openDateTimeSelectorDialog: function () {
+
+            this.oDateTimeSelectorDialog = sap.ui.xmlfragment("zslpmprprb.view.DateTimeSelector", this);
+
+            this.getView().addDependent(this.oDateTimeSelectorDialog);
+
+            this.oDateTimeSelectorDialog.open();
+
+
+        },
+
 
         /*
         * Set total processing time value
@@ -721,6 +846,16 @@ sap.ui.define([
             }
 
             oEvent.getSource().getBinding("items").filter([]);
+
+        },
+
+        /**
+        * Destroy date and time selector
+        */
+
+        _destroyDateTimeDialog: function () {
+
+            this.oDateTimeSelectorDialog.destroy(true);
 
         },
 
@@ -1204,7 +1339,7 @@ sap.ui.define([
 
                         // Filling problem texts, if required
 
-                        if (oTextPayload.TextString.length > 0) {
+                        if ((oTextPayload.TextString) && (oTextPayload.TextString.length > 0)) {
 
                             t._createProblemText(t.Guid, oTextPayload.Tdid, oTextPayload.TextString, function () {
 
@@ -1226,7 +1361,6 @@ sap.ui.define([
 
                     });
             }
-
         },
 
         /**
