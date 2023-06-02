@@ -262,6 +262,8 @@
                                                 <Text text="{SLAIrtTimestamp}" width="100%" id="tableProblemDetailsFieldSLAIrtTimestamp" class="sapUiSmallMarginEnd"/>
                                                 <core:Icon class="sapUiSmallMarginEnd" src="sap-icon://history" color="#053B70"
                                                     press="onPressIrtHistory" id="buttonIrtHistory" visible="{=  ${IrtHistoryAvailable}  ? true :  false }"/>
+                                                <core:Icon class="sapUiSmallMarginEnd" src="sap-icon://edit" color="#053B70"
+                                                    press="onPressIrtManualChange" id="buttonChangeIRTManually"  visible="{= ${IRTSLAModel>/manualEditPossibility} ? true: false }" />
                                             </HBox>
                                         </cells>
                                     </ColumnListItem>
