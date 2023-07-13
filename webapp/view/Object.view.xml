@@ -348,7 +348,9 @@
                                 </upload:toolbar>
                                 <upload:items>
                                     <upload:UploadSetItem id="problemUploadSetItem" fileName="{Name}" mediaType="{Mimetype}" url="{DocumentId}"
-                                    visibleEdit="false" visibleRemove="false" enabledRemove="false" openPressed="onFileNamePress"  />
+                                    visibleEdit="false" visibleRemove="false" 
+                                    enabledRemove="false" openPressed="onFileNamePress" 
+                                    thumbnailUrl="{= ${EnabledEdit} ? 'sap-icon://locked' : '' }"/>
                                 </upload:items>
                             </upload:UploadSet>
                         </content>
