@@ -132,6 +132,17 @@ sap.ui.define([
         /* =========================================================== */
         /* event handlers                                              */
         /* =========================================================== */
+
+        /**
+        * Upload completed
+        */
+        onUploadCompleted: function (oEvent) {
+            var oUploadSet = this.byId("problemUploadSet");
+            oUploadSet.removeAllIncompleteItems();
+            oUploadSet.getBinding("items").refresh();
+
+        },
+        
         /**
         * Date and time have been selected in selector dialog
         */
@@ -1263,7 +1274,7 @@ sap.ui.define([
        * Upload all incomplete problem attachments at once in a cycle
        */
 
-        _uploadProblemAttachments: function (sGuid, callback) {
+        _uploadProblemAttachments: function (sGuid, bInternal, callback) {
 
             var oUploadSet = this.byId("problemUploadSet"),
                 sAttachmentUploadURL = "/ProblemSet(guid'" + sGuid + "')/Attachment",
@@ -1287,8 +1298,28 @@ sap.ui.define([
                     text: encodeURIComponent(sFileName)
                 });
 
+                if (bInternal) {
+
+                    // Header to store internal visibility
+
+                    var oCustomerHeaderVisibility = new sap.ui.core.Item({
+                        key: "visibility",
+                        text: "I"
+                    });
+
+                }
+
                 oUploadSet.addHeaderField(oCustomerHeaderToken);
                 oUploadSet.addHeaderField(oCustomerHeaderSlug);
+
+                if (bInternal) {
+
+                    // Header to store internal visibility
+
+                    oUploadSet.addHeaderField(oCustomerHeaderVisibility);
+
+                }
+
                 oUploadSet.uploadItem(oItem);
                 oUploadSet.removeAllHeaderFields();
             }
@@ -1314,9 +1345,17 @@ sap.ui.define([
 
                     t._createProblemText(t.Guid, oTextPayload.Tdid, oTextPayload.TextString, function () {
 
-                        sap.m.MessageBox.information(t.getResourceBundle().getText("problemUpdatedSuccessfully", t.ObjectId));
 
-                        t._refreshApplicationAndSwitchOffEditMode();
+                        t._uploadProblemAttachments(t.Guid, true, function () {
+
+
+                            sap.m.MessageBox.information(t.getResourceBundle().getText("problemUpdatedSuccessfully", t.ObjectId));
+
+                            t._refreshApplicationAndSwitchOffEditMode();
+
+                        });
+
+
                     });
                 }
 
@@ -1342,7 +1381,7 @@ sap.ui.define([
 
                         // Adding attachments
 
-                        t._uploadProblemAttachments(t.Guid, function () {
+                        t._uploadProblemAttachments(t.Guid, false, function () {
 
                             sap.m.MessageBox.information(t.getResourceBundle().getText("problemUpdatedSuccessfully", t.ObjectId));
 
