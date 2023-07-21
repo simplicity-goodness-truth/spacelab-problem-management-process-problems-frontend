@@ -114,7 +114,6 @@ sap.ui.define([
 
             this._prepareEmptyModels();
 
-
             // Disable drag and drop for UploadSet, as it is 
             // not working properly, when not supported
             // file type/media is supported
@@ -128,10 +127,29 @@ sap.ui.define([
             // Set IRT SLA manual editing possibility
 
             this._setIRTSLAManualEditingPossibility();
+
+            // List of attachments before deletion sequence
+
+            this.oListOfAttachmentsBeforeModification = [];
+
+            // Flag that shows that user triggered a file removal at least once
+
+            this.bFileRemovalWasTriggeredAtLeastOnce = false;
+
         },
         /* =========================================================== */
         /* event handlers                                              */
         /* =========================================================== */
+
+        /**
+        * File removal has been pressed
+        */
+        onFileRemovalPress: function () {
+
+
+            this.bFileRemovalWasTriggeredAtLeastOnce = true;
+
+        },
 
         /**
         * Upload completed
@@ -142,7 +160,7 @@ sap.ui.define([
             oUploadSet.getBinding("items").refresh();
 
         },
-        
+
         /**
         * Date and time have been selected in selector dialog
         */
@@ -448,6 +466,101 @@ sap.ui.define([
         /* =========================================================== */
         /* internal methods                                            */
         /* =========================================================== */
+
+        /**
+        * Reload page
+        */
+        _reloadPage: function () {
+
+            location.reload();
+        },
+
+        /**
+        * Refresh UploadSet
+        */
+        _refreshUploadSet: function () {
+
+            var oUploadSet = this.byId("problemUploadSet");
+
+            oUploadSet.removeAllIncompleteItems();
+
+            oUploadSet.getBinding("items").refresh();
+
+        },
+
+        /*
+        * Get list of attachments before attachments modification
+        */
+        getListOfAttachmentsBeforeModification: function () {
+
+            this.oListOfAttachmentsBeforeModification = this.byId("problemUploadSet").getItems();
+
+        },
+
+        /*
+        * Get attachments modification on save action (uploading or removal)
+        */
+        _getAttachmentsModificationOnSaveAction: function () {
+
+            var oAttachmentsToUploadOnBackend = this.byId("problemUploadSet").getIncompleteItems();
+
+            if (this.oListOfAttachmentsBeforeModification && this.oListOfAttachmentsBeforeModification.length) {
+
+                // Getting a list of uploadSet items on a moment of saving (after items are preliminary
+                // removed in frontned, but not in a backend)
+
+                var oAttachmentsAfterModification = this.byId("problemUploadSet").getItems()
+
+                // Deleting attachment items on backend which were initially on frontned, but
+                // then were removed on frontend
+
+                var oAttachmentsToDeleteOnBackend = this.oListOfAttachmentsBeforeModification.filter(function (val) {
+                    return oAttachmentsAfterModification.indexOf(val) == -1;
+                });
+              
+
+                return {
+                    "attachmentsToDeleteOnBackend": oAttachmentsToDeleteOnBackend,
+                    "attachmentsToUploadOnBackend": oAttachmentsToUploadOnBackend
+                }
+
+            } 
+
+            if (this.oListOfAttachmentsBeforeModification && !this.oListOfAttachmentsBeforeModification.length 
+                && oAttachmentsToUploadOnBackend && oAttachmentsToUploadOnBackend.length) {
+
+                return {              
+                    "attachmentsToUploadOnBackend": oAttachmentsToUploadOnBackend
+                }
+
+            }
+
+
+        },
+
+        /*
+        * Remove attachments on backend
+        */
+        _removeAttachmentsOnBackend: function (oAttachmentsToDeleteOnBackend) {
+
+            var sErroneousExecutionText = this.getResourceBundle().getText("problemUpdateFailure"),
+                t = this;
+
+            for (var i = 0; i < oAttachmentsToDeleteOnBackend.length; i++) {
+
+                var sAttachmentPointer = oAttachmentsToDeleteOnBackend[i].getBindingContext().sPath
+
+                sharedLibrary.removeEntity(sAttachmentPointer, sErroneousExecutionText, this, false, true, function () {
+
+                    // Whole page reload is required, otherwise
+                    // UploadSet throwns a "duplicate id" error for a deleted UploadSet item
+
+                    t._reloadPage();
+
+                })
+
+            }
+        },
 
         /*
         * Get application configuration parameters
@@ -901,6 +1014,22 @@ sap.ui.define([
 
             oRuntimeModel.setProperty("/editModeActive", !isEditModeActive);
 
+            // Remove incompleted uploads from UploadSet
+
+            var oUploadSet = this.byId("problemUploadSet");
+            oUploadSet.removeAllIncompleteItems();
+
+            // We have to reload a whole page to avoid duplicate item ids error for UploadSet
+            // for a case, when a user confirmed a file removal, but then for a some reason
+            // switched an edit mode off
+
+            if (this.bFileRemovalWasTriggeredAtLeastOnce) {
+
+                this._reloadPage();
+
+                this.bFileRemovalWasTriggeredAtLeastOnce = false;
+            }
+
             // Actions when Edit mode has been switched on
 
             if (this._isEditModeActive()) {
@@ -1136,7 +1265,8 @@ sap.ui.define([
                 bStatusHasBeenChanged = false,
                 oPayload = {},
                 oTextPayload = {},
-                sNewStatus;
+                sNewStatus,
+                oAttachmentsToDelete = [];
 
             if (oChangedFields.length > 0) {
 
@@ -1144,10 +1274,12 @@ sap.ui.define([
                     sSaveConfirmationMessage = t.getResourceBundle().getText("confirmProblemSavingWithChangedFields");
 
                 for (var k = 0; k < oChangedFields.length; k++) {
-
+                                        
                     var oChangedFieldsKeys = Object.keys(oChangedFields[k]);
 
                     for (var i = 0; i < oChangedFieldsKeys.length; i++) {
+
+                        sSelectedTextValue = "";
 
                         // Text values of selected fields
 
@@ -1171,6 +1303,25 @@ sap.ui.define([
                                 sSelectedTextValue = t._getTextFieldValue();
                                 sFieldName = t.getResourceBundle().getText(t._getTextTypeForStatus(sNewStatus) + "TextTitle");
                                 break;
+
+                            case 'attachmentsToDelete':
+
+                                sFieldName = t.getResourceBundle().getText("removedAttachmentsCount");
+
+                                sSelectedTextValue = oChangedFields[k][oChangedFieldsKeys[i]].length;
+
+                                oAttachmentsToDelete = oChangedFields[k][oChangedFieldsKeys[i]];
+
+                                break;
+
+                            case 'attachmentsToUpload':
+
+                                sFieldName = t.getResourceBundle().getText("uploadedAttachmentsCount");
+
+                                sSelectedTextValue = oChangedFields[k][oChangedFieldsKeys[i]].length;
+
+                                break;
+
                             default:
                                 sSelectedTextValue = oChangedFields[k][oChangedFieldsKeys[i]];
                                 break;
@@ -1189,7 +1340,11 @@ sap.ui.define([
                                 sListOfChangedFields + sFieldName + ":" + " " + sSelectedTextValue : sFieldName + ":" + " " + sSelectedTextValue;
                         sListOfChangedFields = sListOfChangedFields + "\n";
 
-                        oPayload[oChangedFieldsKeys[i]] = oChangedFields[k][oChangedFieldsKeys[i]];
+                        // Should not put attachments related fields into payload
+
+                        if (oChangedFieldsKeys[i].indexOf("attachments") == -1) {
+                            oPayload[oChangedFieldsKeys[i]] = oChangedFields[k][oChangedFieldsKeys[i]];
+                        }
 
                     }
 
@@ -1217,6 +1372,13 @@ sap.ui.define([
 
                         t._saveProblem(oPayload, oTextPayload);
 
+                        // Finally removing attachments from a server
+
+                        if (oAttachmentsToDelete.length > 0) {
+
+                            t._removeAttachmentsOnBackend(oAttachmentsToDelete);
+
+                        }
                     }
 
                 });
@@ -1411,6 +1573,10 @@ sap.ui.define([
 
             this._refreshView();
 
+            // Refreshing attachments
+
+            this._refreshUploadSet();
+
         },
 
         /**
@@ -1439,6 +1605,8 @@ sap.ui.define([
 
             var oProblemFieldsInScopeKeys = Object.keys(oProblemFieldsInScope);
 
+            // Generic fields block
+
             for (var i = 0; i < oProblemFieldsInScopeKeys.length; i++) {
 
                 if (this.initialProblemState[oProblemFieldsInScopeKeys[i]] !== oProblemFieldsInScope[oProblemFieldsInScopeKeys[i]]) {
@@ -1450,6 +1618,54 @@ sap.ui.define([
                     oProblemChangedField = {};
 
                 }
+            }
+
+            // Attachments block
+
+            var oAttachmentsModificationOnSaveAction = this._getAttachmentsModificationOnSaveAction();
+
+            var oAttachmentsToDelete = [];
+            var oAttachmentsToUpload = [];
+
+            // Attachments deletion has been performed
+
+            if (oAttachmentsModificationOnSaveAction && oAttachmentsModificationOnSaveAction.attachmentsToDeleteOnBackend && (oAttachmentsModificationOnSaveAction.attachmentsToDeleteOnBackend.length > 0)) {
+
+                oAttachmentsModificationOnSaveAction.attachmentsToDeleteOnBackend.forEach(function (value, index, array) {
+
+                    oAttachmentsToDelete.push(value);
+
+                });
+            }
+
+            if (oAttachmentsToDelete.length > 0) {
+
+                oProblemChangedFields.push(
+
+                    {
+                        "attachmentsToDelete": oAttachmentsToDelete
+                    });
+            }
+
+            // Attachments upload has been performed
+
+            if (oAttachmentsModificationOnSaveAction && oAttachmentsModificationOnSaveAction.attachmentsToUploadOnBackend && (oAttachmentsModificationOnSaveAction.attachmentsToUploadOnBackend.length > 0)) {
+
+                oAttachmentsModificationOnSaveAction.attachmentsToUploadOnBackend.forEach(function (value, index, array) {
+
+                    oAttachmentsToUpload.push(value);
+
+                });
+
+            }
+
+            if (oAttachmentsToUpload.length > 0) {
+
+                oProblemChangedFields.push(
+
+                    {
+                        "attachmentsToUpload": oAttachmentsToUpload
+                    });
             }
 
             return oProblemChangedFields;
@@ -1516,6 +1732,10 @@ sap.ui.define([
             oRuntimeModel.setProperty("/editModeActive", false);
             this.oSemanticPage.setShowFooter(false);
             this.initialProblemState = {};
+
+            // Resetting a list of attachments
+
+            this.oListOfAttachmentsBeforeModification = [];
         },
 
         /**
@@ -1541,6 +1761,10 @@ sap.ui.define([
                 oObject = oView.getBindingContext().getObject();
 
             this.initialProblemState = oObject;
+
+            // Getting a list of attachments
+
+            this.getListOfAttachmentsBeforeModification();
 
         },
 
