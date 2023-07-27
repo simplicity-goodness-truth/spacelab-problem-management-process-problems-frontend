@@ -391,7 +391,10 @@
                                     </table:Column>
                                     <table:Column label="{i18n>problemHistoryLogEvent}" width="10%" id='problemHistoryLogEventColumn'>
                                         <table:template>
-                                            <Text id="problemHistoryLogEventText" text="{= ${Event} === 'C' ? ${i18n>problemHistoryLogCreate} : ${i18n>problemHistoryLogUpdate} }" />
+                                            <Text id="problemHistoryLogEventText" 
+                                            text="{= ${Event} === 'C' ? ${i18n>problemHistoryLogCreate} : 
+                                                ${Event} === 'U' ? ${i18n>problemHistoryLogUpdate} : 
+                                                    ${Event} === 'A' ? ${i18n>problemHistoryLogAttachmentUpload} : ${i18n>problemHistoryLogAttachmentRemoval} }" />
                                         </table:template>
                                     </table:Column>
                                     <table:Column label="{i18n>problemHistoryLogUsername}" width="12%"  id='problemHistoryLogUsernameColumn'>
