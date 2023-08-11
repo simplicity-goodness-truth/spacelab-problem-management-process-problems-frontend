@@ -244,6 +244,10 @@ sap.ui.define([
 
             }
 
+             // Filter by free text 
+
+             aTableSearchState.push(
+                new Filter("Note", FilterOperator.EQ, this.byId('freeTextFilter').getValue()));
 
             this._applySearch(aTableSearchState);
 
