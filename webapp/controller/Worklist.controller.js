@@ -70,7 +70,7 @@ sap.ui.define([
             // Link to Sorting options fragment
 
             if (!this.oSortingResponsivePopover) {
-                
+
                 this.oSortingResponsivePopover = sap.ui.xmlfragment("zslpmprprb.view.Sorting", this);
                 this.getView().addDependent(this.oSortingResponsivePopover);
             }
@@ -120,7 +120,7 @@ sap.ui.define([
 
                 var oLabelText = oTarget.childNodes[0].textContent; //Get Column Header text
 
-                if ((JSON.stringify(t.oColumnsSupportingSorting).includes(oLabelText)) && oLabelText.length > 0 ) {
+                if ((JSON.stringify(t.oColumnsSupportingSorting).includes(oLabelText)) && oLabelText.length > 0) {
 
                     // Displaying pop-up for sorting if there are records in table
 
@@ -200,6 +200,7 @@ sap.ui.define([
         onSearch: function (oEvent) {
 
 
+
             var aTableSearchState = [];
 
             // Picking all selected items from multi-selectional filters
@@ -243,9 +244,12 @@ sap.ui.define([
 
             }
 
+            // Filter by free text 
+
+            aTableSearchState.push(
+                new Filter("Note", FilterOperator.EQ, this.byId('freeTextFilter').getValue()));
 
             this._applySearch(aTableSearchState);
-
 
         },
 
