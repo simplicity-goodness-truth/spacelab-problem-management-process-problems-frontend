@@ -46,7 +46,7 @@ const statusesWithMandatoryTextComments = Object.freeze(
 
 const statusesWithPossibleProccessorChange = Object.freeze(
     class statusesWithPossibleProccessorChange {
-        static statuses = ['inProcess', 'new', 'approved'];
+        static statuses = ['new','approved','inProcess','onApproval'];
     });
 
 sap.ui.define([
