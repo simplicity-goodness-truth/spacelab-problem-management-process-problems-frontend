@@ -31,7 +31,6 @@ const textTypesForStatuses = Object.freeze(
         static customerAction = 'SU01';
         static solutionProvided = 'SUSO';
         static informationRequested = 'SU01';
-
     });
 
 const textTypesOfProblemCreation = Object.freeze(
@@ -46,7 +45,7 @@ const statusesWithMandatoryTextComments = Object.freeze(
 
 const statusesWithPossibleProccessorChange = Object.freeze(
     class statusesWithPossibleProccessorChange {
-        static statuses = ['inProcess', 'new', 'approved'];
+        static statuses = ['new','approved','inProcess','onApproval'];
     });
 
 sap.ui.define([

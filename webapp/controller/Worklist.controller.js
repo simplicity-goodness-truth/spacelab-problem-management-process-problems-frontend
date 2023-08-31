@@ -291,13 +291,6 @@ sap.ui.define([
                 field: "StatusText"
             });
 
-
-            this.oColumnsSupportingSorting.push({
-                id: this.getResourceBundle().getText("problemDate"),
-                field: "PostingDate"
-            });
-
-
         },
 
         /**
