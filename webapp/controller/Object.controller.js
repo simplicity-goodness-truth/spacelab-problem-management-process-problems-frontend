@@ -45,7 +45,7 @@ const statusesWithMandatoryTextComments = Object.freeze(
 
 const statusesWithPossibleProccessorChange = Object.freeze(
     class statusesWithPossibleProccessorChange {
-        static statuses = ['new','approved','inProcess','onApproval'];
+        static statuses = ['new', 'approved', 'inProcess', 'onApproval'];
     });
 
 sap.ui.define([
@@ -135,10 +135,29 @@ sap.ui.define([
 
             this.bFileRemovalWasTriggeredAtLeastOnce = false;
 
+            // Getting support teams list from App.controller
+
+            this.oSupportTeamsList = this.getOwnerComponent().getModel("supportTeamsList");
+
         },
         /* =========================================================== */
         /* event handlers                                              */
         /* =========================================================== */
+
+        /**
+        * Support team change in processor search dialog
+        */
+        onChangeSupportTeamSelect: function (oEvent) {
+
+            // Firstly we clear the search field
+
+            sap.ui.getCore().byId("processorSearchDialogSearchField").setValue("");
+
+            // Filtering processors by support team
+
+            this._filterProcessorsTableBasedOnSupportTeam(oEvent.getSource().getSelectedItem().getProperty("text"));
+
+        },
 
         /**
         * File removal has been pressed
@@ -302,30 +321,49 @@ sap.ui.define([
         */
         onProcessorSearch: function (oEvent) {
 
-            var sValue = oEvent.getParameter("value"),
+            var sValue = oEvent.getParameter("query"),
                 oFilter = [],
-                oBinding = oEvent.getParameter("itemsBinding");
+                oBinding = sap.ui.getCore().byId("processorSearchDialogTable").getBinding("items");
 
-            oFilter.push(new Filter("FullName", FilterOperator.Contains, sValue));
+            if (sValue.length > 0) {
 
-            oBinding.filter(oFilter);
-
-            // Additional search by search tags if no chance to find by name
-
-            if (oBinding.aIndices.length === 0) {
-
-                oFilter = [];
-
-                oFilter.push(new Filter("SearchTag1", FilterOperator.Contains, sValue));
+                oFilter.push(new Filter("FullName", FilterOperator.Contains, sValue));
 
                 oBinding.filter(oFilter);
+
+                // Additional search by search tags if no chance to find by name
+
+                if (oBinding.aIndices.length === 0) {
+
+                    oFilter = [];
+
+                    oFilter.push(new Filter("SearchTag1", FilterOperator.Contains, sValue));
+
+                    oBinding.filter(oFilter);
+                }
+
+            } else {
+
+                this._filterProcessorsTableBasedOnDefaultSupportTeam();
+
+                sap.ui.getCore().byId("supportTeamSelect").setSelectedKey(this.DefaultProcessingOrgUnit);
+
             }
+
         },
 
         /**
         * Close processor search dialog
         */
         onProcessorSearchDialogClose: function (oEvent) {
+
+            this._destroyProcessorSearchDialog();
+        },
+
+        /**
+        * Processor chosen in search dialog
+        */
+        onProcessorSearchDialogChoose: function (oEvent) {
 
             this._setSelectedProcessor(oEvent);
             this._destroyProcessorSearchDialog();
@@ -437,6 +475,7 @@ sap.ui.define([
             this.ProductGuid = oObject.ProductGuid;
             this.Priority = oObject.Priority;
             this.TotalProcessingTimeInMinutes = oObject.TotalProcessingTimeInMinutes;
+            this.DefaultProcessingOrgUnit = oObject.DefaultProcessingOrgUnit;
 
             this._setAvailableStatuses(oObject.Status);
 
@@ -465,6 +504,19 @@ sap.ui.define([
         /* =========================================================== */
         /* internal methods                                            */
         /* =========================================================== */
+
+        /**
+        * Filter processors based on Support Team
+        */
+        _filterProcessorsTableBasedOnSupportTeam: function (sSupportTeamText) {
+
+            var sPath = "SearchTag2",
+                sOperator = "EQ",
+                oBinding = sap.ui.getCore().byId("processorSearchDialogTable").getBinding("items");
+
+            oBinding.filter([new sap.ui.model.Filter(sPath, sOperator, sSupportTeamText)]);
+
+        },
 
         /**
         * Reload page
@@ -516,19 +568,19 @@ sap.ui.define([
                 var oAttachmentsToDeleteOnBackend = this.oListOfAttachmentsBeforeModification.filter(function (val) {
                     return oAttachmentsAfterModification.indexOf(val) == -1;
                 });
-              
+
 
                 return {
                     "attachmentsToDeleteOnBackend": oAttachmentsToDeleteOnBackend,
                     "attachmentsToUploadOnBackend": oAttachmentsToUploadOnBackend
                 }
 
-            } 
+            }
 
-            if (this.oListOfAttachmentsBeforeModification && !this.oListOfAttachmentsBeforeModification.length 
+            if (this.oListOfAttachmentsBeforeModification && !this.oListOfAttachmentsBeforeModification.length
                 && oAttachmentsToUploadOnBackend && oAttachmentsToUploadOnBackend.length) {
 
-                return {              
+                return {
                     "attachmentsToUploadOnBackend": oAttachmentsToUploadOnBackend
                 }
 
@@ -939,29 +991,38 @@ sap.ui.define([
         */
         _setSelectedProcessor: function (oEvent) {
 
-            var aContexts = oEvent.getParameter("selectedContexts"),
-                t = this;
+            // ------- Old implementation for SelectDialog -----------
 
-            // Something was selected
+            // var aContexts = oEvent.getParameter("selectedContexts"),
+            //     t = this;
 
-            if (aContexts && aContexts.length) {
+            // // Something was selected
 
-                var selectedValue = aContexts.map(function (oContext) {
-                    return oContext.getObject().FullName;
-                }).join(", "),
-                    selectedCode = aContexts.map(function (oContext) {
-                        return oContext.getObject().BusinessPartner;
-                    }).join(", ");
+            // if (aContexts && aContexts.length) {
 
-                // Setting values of a specified control and storing selected code
+            //     var selectedValue = aContexts.map(function (oContext) {
+            //         return oContext.getObject().FullName;
+            //     }).join(", "),
+            //         selectedCode = aContexts.map(function (oContext) {
+            //             return oContext.getObject().BusinessPartner;
+            //         }).join(", ");
 
-                t.byId('headerProcessorSelect').setValue(selectedValue);
+            //     // Setting values of a specified control and storing selected code
 
-                t.selectedProcessor = selectedCode;
+            //     t.byId('headerProcessorSelect').setValue(selectedValue);
 
-            }
+            //     t.selectedProcessor = selectedCode;
 
-            oEvent.getSource().getBinding("items").filter([]);
+            // }           
+
+            // oEvent.getSource().getBinding("items").filter([]);
+
+            // ------- New implementation for Table -----------
+
+            var t = this;
+
+            t.selectedProcessor = oEvent.getSource().getCells()[0].getText();
+            t.byId('headerProcessorSelect').setValue(oEvent.getSource().getCells()[1].getText());
 
         },
 
@@ -1250,6 +1311,32 @@ sap.ui.define([
 
             sap.ui.getCore().byId("processorSearchDialog").setModel(this.oProcessorsList, "processorSearchModel");
 
+            sap.ui.getCore().byId("processorSearchDialog").setModel(this.oSupportTeamsList, "supportTeamsSearchModel");
+
+            // Filtering processors according to a default processing unit      
+
+            this._filterProcessorsTableBasedOnDefaultSupportTeam();
+
+        },
+
+        /**
+        * Filter processors based on a default support team
+        */
+        _filterProcessorsTableBasedOnDefaultSupportTeam: function () {
+
+
+            for (var i = 0; i < this.oSupportTeamsList.oData.SupportTeamsList.length; i++) {
+
+                if (this.oSupportTeamsList.oData.SupportTeamsList[i].OrgUnitNumber === this.DefaultProcessingOrgUnit) {
+
+                    var sSupportTeamName = this.oSupportTeamsList.oData.SupportTeamsList[i].Name;
+
+                    this._filterProcessorsTableBasedOnSupportTeam(sSupportTeamName);
+
+                    return;
+
+                }
+            }
         },
 
         /**
@@ -1273,7 +1360,7 @@ sap.ui.define([
                     sSaveConfirmationMessage = t.getResourceBundle().getText("confirmProblemSavingWithChangedFields");
 
                 for (var k = 0; k < oChangedFields.length; k++) {
-                                        
+
                     var oChangedFieldsKeys = Object.keys(oChangedFields[k]);
 
                     for (var i = 0; i < oChangedFieldsKeys.length; i++) {

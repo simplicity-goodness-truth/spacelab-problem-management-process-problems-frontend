@@ -221,6 +221,10 @@ sap.ui.define([
                 {
                     filterName: "processorFilter",
                     propertyName: "ProcessorBusinessPartner"
+                },
+                {
+                    filterName: "supportTeamFilter",
+                    propertyName: "SupportTeamBusinessPartner"
                 }
             ];
 
