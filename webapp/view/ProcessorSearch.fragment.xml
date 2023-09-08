@@ -1,7 +1,60 @@
 <?xml version="1.0"?>
-<core:FragmentDefinition xmlns:core="sap.ui.core" xmlns="sap.m">
-
-<SelectDialog title="{i18n>processorsSearch}" items="{ path: 'processorSearchModel>/ProcessorsList' }" 
+<core:FragmentDefinition xmlns:core="sap.ui.core" xmlns="sap.m" xmlns:fb="sap.ui.comp.filterbar"
+xmlns:f="sap.ui.layout.form" xmlns:l="sap.ui.layout">
+    <Dialog id="processorSearchDialog" resizable="true" contentWidth="850px" contentHeight="300px">
+        <l:VerticalLayout class="sapUiContentPadding">
+            <Label id="processorSearchDialogSearchFieldLabelSupportTeam" text="{i18n>problemProcessorSupportTeamTitle}:"/>
+            <Select id="supportTeamSelect"   
+       showSecondaryValues="true"  items="{ path: 'supportTeamsSearchModel>/SupportTeamsList' }"
+         change="onChangeSupportTeamSelect" selectedKey="{DefaultProcessingOrgUnit}"
+           width="300px">
+                <core:Item key="{supportTeamsSearchModel>OrgUnitNumber}" 
+               text="{supportTeamsSearchModel>Name}" id="SupportTeamSelectText" />
+            </Select>
+        </l:VerticalLayout>
+        <l:VerticalLayout class="sapUiContentPadding">
+            <Label id="processorSearchDialogSearchFieldLabelFreeText" text="{i18n>freeText}:"/>
+            <SearchField  id="processorSearchDialogSearchField" 
+       search="onProcessorSearch" width="300px"/>
+        </l:VerticalLayout>
+        <!-- </l:HorizontalLayout> -->
+        <Table id="processorSearchDialogTable" width="auto" 
+            items="{ path: 'processorSearchModel>/ProcessorsList' }">
+            <columns>
+                <Column id="processorBusinessPartnerColumn" visible="false"/>
+                <Column id="processorFullNameColumn" width="30%">
+                    <Text text="{i18n>problemProcessorFullNameTitle}" id="processorFullNameColumnLabel" />
+                </Column>
+                <Column id="processorOccupationColumn" width="50%">
+                    <Text text="{i18n>problemProcessorOccupationTitle}" id="processorOccupationColumnLabel" />
+                </Column>
+                <Column id="processorSupportTeamColumn" width="20%">
+                    <Text text="{i18n>problemProcessorSupportTeamTitle}" id="processorSupportTeamColumnLabel" />
+                </Column>
+            </columns>
+            <items>
+                <ColumnListItem id="processorRecord" type="Active" press="onProcessorSearchDialogChoose">
+                    <cells>
+                        <Text text="{processorSearchModel>BusinessPartner}" />
+                    </cells>
+                    <cells>
+                        <Text text="{processorSearchModel>FullName}" />
+                    </cells>
+                    <cells>
+                        <Text text="{processorSearchModel>SearchTag1}" />
+                    </cells>
+                    <cells>
+                        <Text text="{processorSearchModel>SearchTag2}" />
+                    </cells>
+                </ColumnListItem>
+            </items>
+        </Table>
+        <buttons>
+            <Button text="{i18n>Cancel}" press="onProcessorSearchDialogClose"/>
+        </buttons>
+    </Dialog>
+    <!-- Old implementation with SelectDialog / remove everything above before core:FragmentDefinition to activate again -->
+    <!-- <SelectDialog title="{i18n>processorsSearch}" items="{ path: 'processorSearchModel>/ProcessorsList' }" 
     growingThreshold="30" cancel="onProcessorSearchDialogClose" confirm="onProcessorSearchDialogClose" 
     search="onProcessorSearch" 
     noDataText="{i18n>noProcessorFound}" id="processorSearchDialog">
@@ -9,6 +62,5 @@
 <StandardListItem id="processorRecord" title="{processorSearchModel>FullName}" type="Active" iconInset="false" 
     iconDensityAware="false" description="{processorSearchModel>SearchTag1}"/>
 
-</SelectDialog>
-
+</SelectDialog>  -->
 </core:FragmentDefinition>

@@ -79,6 +79,18 @@
                             <Text id="dummySpacer3" visible="false" />
                         </cells>
                     </ColumnListItem>
+                    <ColumnListItem id="headerParameterSupportTeamStatic" 
+                            visible="{= ${runtimeModel>/editModeActive} ? false : ${SupportTeamBusinessPartner} ? true : false }">
+                        <cells>
+                            <Text text="{i18n>problemProcessorSupportTeamTitle}" id="problemSupportTeamTitleStatic"/>
+                        </cells>
+                        <cells>
+                            <Text text="{SupportTeamName}" id="SupportTeamName" />
+                        </cells>
+                        <cells>
+                            <Text id="dummySpacer8" visible="false" />
+                        </cells>
+                    </ColumnListItem>
                     <ColumnListItem id="headerParameterPriorityDynamic" 
                         visible="{= ${ProcessorPriorityChangeEnabled} ? ${runtimeModel>/editModeActive} ? true : false : false}">
                         <cells>
