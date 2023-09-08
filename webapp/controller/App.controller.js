@@ -44,9 +44,24 @@ sap.ui.define([
 
             });
 
-             // Getting application configuration
+            // Getting list of Support Teams
 
-             this._getApplicationConfiguration(function () {
+            
+            this._getListOfSupportTeams(function () {
+
+                var oSupportTeamsList = new sap.ui.model.json.JSONModel({
+
+                    SupportTeamsList: t.oSupportTeamsList
+
+                });
+
+                t.getOwnerComponent().setModel(oSupportTeamsList, "supportTeamsList");                
+
+            });
+
+            // Getting application configuration
+
+            this._getApplicationConfiguration(function () {
 
                 var oApplicationConfiguration = new sap.ui.model.json.JSONModel({
 
@@ -63,6 +78,22 @@ sap.ui.define([
         /* =========================================================== */
         /* begin: internal methods                                     */
         /* =========================================================== */
+
+        /**
+        * Get list of possible Support Teams
+        */
+        _getListOfSupportTeams: function (callback) {
+
+            var t = this,
+                sErroneousExecutionText = this.getResourceBundle().getText("oDataModelReadFailure");
+
+            sharedLibrary.readEntity("SupportTeam", sErroneousExecutionText, this, false, false, function (oData) {
+                t.oSupportTeamsList = oData.results;
+                return callback();
+
+            });
+
+        },
 
         /**
         * Get application configuration
