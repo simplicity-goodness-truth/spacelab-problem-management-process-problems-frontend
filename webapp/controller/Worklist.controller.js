@@ -84,6 +84,12 @@ sap.ui.define([
 
             this.columnSelectedForSorting;
 
+            // Enabling filter search on Enter button 
+
+            this.byId("mainFilterBar").onsapenter = function () {
+                t.onSearch(null);
+            }
+
 
         },
 
@@ -121,7 +127,7 @@ sap.ui.define([
 
                 var oLabelText = oTarget.childNodes[0].textContent; //Get Column Header text
 
-                if ((JSON.stringify(t.oColumnsSupportingSorting).includes(oLabelText)) && oLabelText.length > 0 ) {
+                if ((JSON.stringify(t.oColumnsSupportingSorting).includes(oLabelText)) && oLabelText.length > 0) {
 
                     // Displaying pop-up for sorting if there are records in table
 
@@ -225,6 +231,14 @@ sap.ui.define([
                 {
                     filterName: "supportTeamFilter",
                     propertyName: "SupportTeamBusinessPartner"
+                },
+                {
+                    filterName: "productFilter",
+                    propertyName: "ProductGuid"
+                },
+                {
+                    filterName: "problemNumberFilter",
+                    propertyName: "ObjectId"
                 }
             ];
 
@@ -248,10 +262,23 @@ sap.ui.define([
 
             }
 
-             // Filter by free text 
+            // Filter by free text 
 
-             aTableSearchState.push(
-                new Filter("Note", FilterOperator.EQ, this.byId('freeTextFilter').getValue()));
+            if (this.byId('freeTextFilter').getValue().length > 0) {
+
+                aTableSearchState.push(
+                    new Filter("Note", FilterOperator.EQ, this.byId('freeTextFilter').getValue()));
+
+            }
+
+            // Filter by description text
+
+            if (this.byId('descriptionFilter').getValue().length > 0) {
+
+                aTableSearchState.push(
+                    new Filter("Description", FilterOperator.EQ, this.byId('descriptionFilter').getValue()));
+
+            }
 
             this._applySearch(aTableSearchState);
 
