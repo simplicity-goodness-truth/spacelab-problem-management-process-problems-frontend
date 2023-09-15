@@ -1,8 +1,8 @@
 <mvc:View controllerName="zslpmprprb.controller.Worklist" xmlns="sap.m" xmlns:mvc="sap.ui.core.mvc" xmlns:semantic="sap.f.semantic"
 xmlns:fb="sap.ui.comp.filterbar" xmlns:core="sap.ui.core" height="90%">
-	<fb:FilterBar reset="onReset"  search="onSearch"  id="mainFilterBar">
+	<fb:FilterBar reset="onReset"  search="onSearch"  id="mainFilterBar" >
 		<fb:filterGroupItems>
-			<fb:FilterGroupItem groupName="filterPriority" name="A" showClearOnFB="true" partOfCurrentVariant="true" visibleInFilterBar="true"
+			<fb:FilterGroupItem groupName="filterPriority" name="A"  partOfCurrentVariant="true" visibleInFilterBar="true"
                 label="{i18n>problemPriorityTitle}" id="filterPriority">
 				<fb:control>
 					<MultiComboBox id="priorityFilter" width="350px" items="{
@@ -46,6 +46,17 @@ xmlns:fb="sap.ui.comp.filterbar" xmlns:core="sap.ui.core" height="90%">
 					</MultiComboBox>
 				</fb:control>
 			</fb:FilterGroupItem>
+			<fb:FilterGroupItem groupName="filterProduct" name="A" partOfCurrentVariant="true" visibleInFilterBar="true"
+                label="{i18n>productTitle}" id="filterProduct">
+				<fb:control>
+					<MultiComboBox id="productFilter" width="350px" items="{
+                    path: '/ProductSet',
+                    sorter: { path: 'Name' }
+					}">
+						<core:Item key="{Guid}" text="{Name}" id="productFilterItem" />
+					</MultiComboBox>
+				</fb:control>
+			</fb:FilterGroupItem>
 			<fb:FilterGroupItem groupName="filterSupportTeam" name="A" partOfCurrentVariant="true" visibleInFilterBar="true"
 			label="{i18n>problemProcessorSupportTeamTitle}" id="filterSupportTeam">
 				<fb:control>
@@ -60,10 +71,31 @@ xmlns:fb="sap.ui.comp.filterbar" xmlns:core="sap.ui.core" height="90%">
 					<DateRangeSelection id="dateRangeSelector" width="auto"/>
 				</fb:control>
 			</fb:FilterGroupItem>
+			<fb:FilterGroupItem groupName="filterDescription" name="A" partOfCurrentVariant="true" visibleInFilterBar="true"
+			label="{i18n>descriptionTitle}" id="filterDescription">
+				<fb:control>
+					<Input  id="descriptionFilter"  showSuggestion="false" showValueHelp="false" width="350px"/>
+				</fb:control>
+			</fb:FilterGroupItem>
 			<fb:FilterGroupItem groupName="filterFreeText" name="A" partOfCurrentVariant="true" visibleInFilterBar="true"
 			label="{i18n>freeText}" id="filterFreeText">
 				<fb:control>
 					<Input  id="freeTextFilter"  showSuggestion="false" showValueHelp="false" width="350px"/>
+				</fb:control>
+			</fb:FilterGroupItem>
+			<fb:FilterGroupItem groupName="filterProblemNumber" name="A" partOfCurrentVariant="true" visibleInFilterBar="true"
+			label="{i18n>problemNumberTitle}" id="filterProblemNumber">
+				<fb:control>
+					<MultiComboBox id="problemNumberFilter" width="350px" 
+					items="{
+						path: '/ProblemSet',
+						sorter: {
+							path: 'ObjectId',
+							descending: true
+						}}" 
+				 	>
+						<core:Item key="{ObjectId}" text="{ObjectId}" id="problemNumberFilterItem"  />
+					</MultiComboBox>
 				</fb:control>
 			</fb:FilterGroupItem>
 		</fb:filterGroupItems>

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <core:FragmentDefinition xmlns:core="sap.ui.core" xmlns="sap.m" xmlns:fb="sap.ui.comp.filterbar"
 xmlns:f="sap.ui.layout.form" xmlns:l="sap.ui.layout">
-    <Dialog id="processorSearchDialog" resizable="true" contentWidth="850px" contentHeight="300px">
+    <Dialog id="processorSearchDialog" resizable="true" contentWidth="850px" contentHeight="300px" draggable="true">
         <l:VerticalLayout class="sapUiContentPadding">
             <Label id="processorSearchDialogSearchFieldLabelSupportTeam" text="{i18n>problemProcessorSupportTeamTitle}:"/>
             <Select id="supportTeamSelect"   
