@@ -40,6 +40,9 @@ items="{
     <Column id="MptPercent">
         <Text text="{i18n>SLAMptPercent}" id="SLAMptPercentLabel"/>
     </Column>
+    <Column id="UserName">
+        <Text text="{i18n>userName}" id="UserNameLabel"/>
+    </Column>
 
 </columns>
 <items>
@@ -68,6 +71,10 @@ items="{
 
         <cells>
             <Text text="{SLAMptHistoryModel>MptPerc} %" />
+        </cells>
+
+        <cells>
+            <Text text="{SLAMptHistoryModel>UserName}" />
         </cells>
 
     </ColumnListItem>

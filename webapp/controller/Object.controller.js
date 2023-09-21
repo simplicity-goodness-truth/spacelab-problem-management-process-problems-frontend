@@ -1,53 +1,3 @@
-// Constants classes
-
-const textTypes = Object.freeze(
-    class textTypes {
-        static reply = 'SU01';
-        static description = 'SU99';
-        static reproductionSteps = 'SURS';
-        static internalNote = 'SU04';
-        static solution = 'SUSO';
-        static businessConsequences = 'SUBI';
-        static additionalInformation = 'SU30';
-    });
-
-const statusNames = Object.freeze(
-    class statusNames {
-        static new = 'E0001'
-        static approved = 'E0015';
-        static inProcess = 'E0002';
-        static customerAction = 'E0003';
-        static solutionProvided = 'E0005';
-        static confirmed = 'E0008';
-        static withdrawn = 'E0010';
-        static onApproval = 'E0016';
-        static informationRequested = 'E0017';
-    });
-
-const textTypesForStatuses = Object.freeze(
-    class textTypesForStatuses {
-
-        static approved = 'SU01';
-        static customerAction = 'SU01';
-        static solutionProvided = 'SUSO';
-        static informationRequested = 'SU01';
-    });
-
-const textTypesOfProblemCreation = Object.freeze(
-    class textTypesOfProblemCreation {
-        static textTypes = ['description', 'reproductionSteps', 'businessConsequences'];
-    });
-
-const statusesWithMandatoryTextComments = Object.freeze(
-    class statusesWithMandatoryTextComments {
-        static statuses = ['customerAction', 'solutionProvided', 'informationRequested', 'withdrawn'];
-    });
-
-const statusesWithPossibleProccessorChange = Object.freeze(
-    class statusesWithPossibleProccessorChange {
-        static statuses = ['new', 'approved', 'inProcess', 'onApproval'];
-    });
-
 sap.ui.define([
     "./BaseController",
     "sap/ui/model/json/JSONModel",
@@ -138,6 +88,34 @@ sap.ui.define([
             // Getting support teams list from App.controller
 
             this.oSupportTeamsList = this.getOwnerComponent().getModel("supportTeamsList");
+
+            // Getting frontend constants
+
+            this.oFrontendConstants = this.getOwnerComponent().getModel("frontendConstants");
+
+            // Filling status names constants
+
+            this.statusNames = Object.freeze(this._setStatusNamesConstants());
+
+            // Filling text types constants
+
+            this.textTypes = Object.freeze(this._setTextTypesConstants());
+
+            // Filling text types for statuses constants
+
+            this.textTypesForStatuses = Object.freeze(this._setTextTypesForStatusesConstants());
+
+            // Filling text types of problem creation
+
+            this.textTypesOfProblemCreation = Object.freeze(this._setTextTypesOfProblemCreationConstants());
+
+            // Filling statuses with mandatory text comments
+
+            this.statusesWithMandatoryTextComments = Object.freeze(this._setStatusesWithMandatoryTextCommentsConstants());
+
+            // Filling statuses with possible processor change
+
+            this.statusesWithPossibleProccessorChange = Object.freeze(this._setStatusesWithPossibleProccessorChangeConstants());            
 
         },
         /* =========================================================== */
@@ -505,6 +483,133 @@ sap.ui.define([
         /* internal methods                                            */
         /* =========================================================== */
 
+        /*
+        * Set statuses with possible processor change
+        */
+
+        _setStatusesWithPossibleProccessorChangeConstants: function () {
+
+            const statuses = [];
+
+            for (var i = 0; i < this.oFrontendConstants.oData.FrontendConstants.results.length; i++) {
+
+                if (this.oFrontendConstants.oData.FrontendConstants.results[i].Class == 'statusesWithPossibleProccessorChange') {
+
+                    statuses.push(this.oFrontendConstants.oData.FrontendConstants.results[i].Value);
+
+                }
+
+            }
+            return { 'statuses': statuses };
+        },
+
+        /*
+        * Set statuses with mandatory text comments
+        */
+
+        _setStatusesWithMandatoryTextCommentsConstants: function () {
+
+            const statuses = [];
+
+            for (var i = 0; i < this.oFrontendConstants.oData.FrontendConstants.results.length; i++) {
+
+                if (this.oFrontendConstants.oData.FrontendConstants.results[i].Class == 'statusesWithMandatoryTextComments') {
+
+                    statuses.push(this.oFrontendConstants.oData.FrontendConstants.results[i].Value);
+
+                }
+
+            }
+            return { 'statuses': statuses };
+        },
+
+        /*
+        * Set text types of problem creation constants        
+        */
+
+        _setTextTypesOfProblemCreationConstants: function () {
+
+            const textTypes = [];
+
+            for (var i = 0; i < this.oFrontendConstants.oData.FrontendConstants.results.length; i++) {
+
+                if (this.oFrontendConstants.oData.FrontendConstants.results[i].Class == 'textTypesOfProblemCreation') {
+
+                    textTypes.push(this.oFrontendConstants.oData.FrontendConstants.results[i].Value);
+
+                }
+
+            }
+
+            return { 'textTypes': textTypes };
+
+        },
+
+        /*
+        * Set text types for statuses constants        
+        */
+
+        _setTextTypesForStatusesConstants: function () {
+
+            const textTypesForStatuses = {};
+
+            for (var i = 0; i < this.oFrontendConstants.oData.FrontendConstants.results.length; i++) {
+
+                if (this.oFrontendConstants.oData.FrontendConstants.results[i].Class == 'textTypesForStatuses') {
+
+                    textTypesForStatuses[this.oFrontendConstants.oData.FrontendConstants.results[i].Parameter] = this.oFrontendConstants.oData.FrontendConstants.results[i].Value;
+
+                }
+
+            }
+
+            return textTypesForStatuses;
+
+        },
+
+        /*
+        * Set text types constants        
+        */
+
+        _setTextTypesConstants: function () {
+
+            const textTypes = {};
+
+            for (var i = 0; i < this.oFrontendConstants.oData.FrontendConstants.results.length; i++) {
+
+                if (this.oFrontendConstants.oData.FrontendConstants.results[i].Class == 'textTypes') {
+
+                    textTypes[this.oFrontendConstants.oData.FrontendConstants.results[i].Parameter] = this.oFrontendConstants.oData.FrontendConstants.results[i].Value;
+
+                }
+
+            }
+
+            return textTypes;
+
+        },
+
+        /*
+        * Set status names constants        
+        */
+        _setStatusNamesConstants: function () {
+
+            const statusNames = {};
+
+            for (var i = 0; i < this.oFrontendConstants.oData.FrontendConstants.results.length; i++) {
+
+                if (this.oFrontendConstants.oData.FrontendConstants.results[i].Class == 'statusNames') {
+
+                    statusNames[this.oFrontendConstants.oData.FrontendConstants.results[i].Parameter] = this.oFrontendConstants.oData.FrontendConstants.results[i].Value;
+
+                }
+
+            }
+
+            return statusNames;
+
+        },
+
         /**
         * Filter processors based on Support Team
         */
@@ -762,6 +867,8 @@ sap.ui.define([
         */
         _isChangeDateReplacementNeeded: function () {
 
+            var t = this;
+
             // Normally during a creation of a problem we firstly fill all mandatory CRMD_ORDERsADM_H and CRMD_CUSTOMER_H
             // fields with first POST execution and then we pass texts for business impacts, contact etc
             // via separated POST method.
@@ -782,7 +889,7 @@ sap.ui.define([
                     var sPath = oTextItems[i].getBindingContext().getPath(),
                         oText = oView.getModel().getObject(sPath);
 
-                    if (textTypesOfProblemCreation.textTypes.indexOf(this._getTextTypeByCode(oText.Tdid)) == '-1') {
+                    if (t.textTypesOfProblemCreation.textTypes.indexOf(this._getTextTypeByCode(oText.Tdid)) == '-1') {
 
                         bOnlyMandatoryTextsAreEntered = false;
                         break;
@@ -814,10 +921,11 @@ sap.ui.define([
         */
         _getTextTypeByCode: function (sTextCode) {
 
+            var t = this;
 
-            for (var key in textTypes) {
+            for (var key in t.textTypes) {
 
-                if (sTextCode == textTypes[key]) {
+                if (sTextCode == t.textTypes[key]) {
 
                     return key;
                 }
@@ -831,11 +939,13 @@ sap.ui.define([
         */
         _getStatusCode: function (sStatusName) {
 
-            for (var key in statusNames) {
+            var t = this;
+
+            for (var key in t.statusNames) {
 
                 if (sStatusName == key) {
 
-                    return statusNames[key];
+                    return t.statusNames[key];
 
                 }
             }
@@ -867,7 +977,7 @@ sap.ui.define([
                 t = this,
                 oPayload = {};
 
-            oPayload.Status = statusNames.inProcess;
+            oPayload.Status = t.statusNames.inProcess;
 
             sharedLibrary.confirmAction(sText, function () {
 
@@ -962,11 +1072,11 @@ sap.ui.define([
             var t = this,
                 bPossibility = false;
 
-            for (var key1 in statusNames) {
+            for (var key1 in t.statusNames) {
 
-                if (sStatusCode == statusNames[key1]) {
+                if (sStatusCode == t.statusNames[key1]) {                    
 
-                    if (statusesWithPossibleProccessorChange.statuses.includes(key1)) {
+                    if (t.statusesWithPossibleProccessorChange.statuses.includes(key1)) {
 
                         bPossibility = true;
 
@@ -1486,11 +1596,13 @@ sap.ui.define([
         */
         _isTextMandatoryForStatus: function (sStatusCode) {
 
-            for (var key1 in statusNames) {
+            var t = this;
 
-                if (sStatusCode == statusNames[key1]) {
+            for (var key1 in t.statusNames) {
 
-                    return statusesWithMandatoryTextComments.statuses.includes(key1);
+                if (sStatusCode == t.statusNames[key1]) {
+
+                    return t.statusesWithMandatoryTextComments.statuses.includes(key1);
 
                 }
             }
@@ -1501,15 +1613,16 @@ sap.ui.define([
         */
         _getTextTypeForStatus: function (sStatusCode) {
 
-            var sTextTypeForStatus = textTypes.internalNote;
+            var t = this,
+                sTextTypeForStatus = t.textTypes.internalNote;
 
-            for (var key1 in statusNames) {
+            for (var key1 in t.statusNames) {
 
-                if (sStatusCode == statusNames[key1]) {
-                    for (var key2 in textTypesForStatuses) {
+                if (sStatusCode == t.statusNames[key1]) {
+                    for (var key2 in t.textTypesForStatuses) {
                         if (key1 == key2) {
 
-                            sTextTypeForStatus = textTypesForStatuses[key2];
+                            sTextTypeForStatus = t.textTypesForStatuses[key2];
                         }
                     }
                 }
