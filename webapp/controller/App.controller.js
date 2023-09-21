@@ -46,7 +46,7 @@ sap.ui.define([
 
             // Getting list of Support Teams
 
-            
+
             this._getListOfSupportTeams(function () {
 
                 var oSupportTeamsList = new sap.ui.model.json.JSONModel({
@@ -55,7 +55,7 @@ sap.ui.define([
 
                 });
 
-                t.getOwnerComponent().setModel(oSupportTeamsList, "supportTeamsList");                
+                t.getOwnerComponent().setModel(oSupportTeamsList, "supportTeamsList");
 
             });
 
@@ -73,11 +73,44 @@ sap.ui.define([
 
             });
 
+            
+            // Getting frontend constants
+
+            this._getFrontendConstants(function () {
+
+                var oFrontendConstants = new sap.ui.model.json.JSONModel({
+
+                    FrontendConstants: t.oFrontendConstants
+
+                });
+
+                t.getOwnerComponent().setModel(oFrontendConstants, "frontendConstants");
+
+            });
+
         },
 
         /* =========================================================== */
         /* begin: internal methods                                     */
         /* =========================================================== */
+
+        /**
+        * Get frontend constants
+        */
+
+        _getFrontendConstants: function (callback) {
+
+            var t = this,
+                sErroneousExecutionText = this.getResourceBundle().getText("oDataModelReadFailure");
+
+            sharedLibrary.readEntity("FrontendConstants", sErroneousExecutionText, this, false, true, function (oData) {
+                t.oFrontendConstants = oData;
+
+                return callback();
+
+            });
+
+        },
 
         /**
         * Get list of possible Support Teams
