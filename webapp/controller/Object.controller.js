@@ -453,6 +453,7 @@ sap.ui.define([
             this.ProductGuid = oObject.ProductGuid;
             this.Priority = oObject.Priority;
             this.TotalProcessingTimeInMinutes = oObject.TotalProcessingTimeInMinutes;
+            this.TotalResponseTimeInMinutes = oObject.TotalResponseTimeInMinutes;
             this.DefaultProcessingOrgUnit = oObject.DefaultProcessingOrgUnit;
 
             this._setAvailableStatuses(oObject.Status);
@@ -464,6 +465,8 @@ sap.ui.define([
             this._resetEditMode();
 
             this._setTotalProcessingTimeValue();
+
+            this._setTotalResponseTimeValue();
 
         },
 
@@ -800,30 +803,60 @@ sap.ui.define([
 
         },
 
-        /*
+            /*
         * Set total processing time value
         */
-        _setTotalProcessingTimeValue: function () {
 
-            var sProcTimeText;
+            _setTotalProcessingTimeValue: function () {
 
-            if (this.TotalProcessingTimeInMinutes > 0) {
-
-                var totalProcessingTimeHours = Math.floor(this.TotalProcessingTimeInMinutes / 60),
-                    totalProcessingTimeMinutes = this.TotalProcessingTimeInMinutes % 60;
-
-                sProcTimeText = totalProcessingTimeHours + " " + this.getResourceBundle().getText("hours") + " " +
-                    totalProcessingTimeMinutes + " " + this.getResourceBundle().getText("minutes");
-
-            } else {
-
-                sProcTimeText = "0" + " " + this.getResourceBundle().getText("hours") + " " +
-                    "0" + " " + this.getResourceBundle().getText("minutes");
-            }
-
-            this.byId("tableProblemDetailsFieldTotalProcTime").setText(sProcTimeText);
-
-        },
+                //  var sProcTimeText;
+     
+                 if (this.TotalProcessingTimeInMinutes > 0) {
+     
+                     // var totalProcessingTimeHours = Math.floor(this.TotalProcessingTimeInMinutes / 60),
+                     //     totalProcessingTimeMinutes = this.TotalProcessingTimeInMinutes % 60;
+     
+                     // sProcTimeText = totalProcessingTimeHours + " " + this.getResourceBundle().getText("hours") + " " +
+                     //     totalProcessingTimeMinutes + " " + this.getResourceBundle().getText("minutes");
+     
+                     // Setting processing time for statistics
+     
+                     var t = this;
+     
+                     this.byId("problemTimeMeasurementsTableTotalProcTime").setText(
+                         t.formatter.secondsParsedToDaysHoursMinutesSeconds(t.TotalProcessingTimeInMinutes * 60, t)
+                     );
+     
+                 } 
+                 
+                 // else {
+                 //     sProcTimeText = "0" + " " + this.getResourceBundle().getText("hours") + " " +
+                 //         "0" + " " + this.getResourceBundle().getText("minutes");
+                 // }
+     
+                // this.byId("tableProblemDetailsFieldTotalProcTime").setText(sProcTimeText);
+     
+             },
+     
+             /*
+            * Set total response time value
+            */
+     
+             _setTotalResponseTimeValue: function () {
+     
+                 if (this.TotalResponseTimeInMinutes > 0) {
+     
+                     // Setting processing time for statistics
+     
+                     var t = this;
+     
+                     this.byId("problemTimeMeasurementsTableTotalResponseTime").setText(
+                         t.formatter.secondsParsedToDaysHoursMinutesSeconds(t.TotalResponseTimeInMinutes * 60, t)
+                     );
+     
+                 } 
+     
+             },
 
         /*
         * Disable drag and drop function for UploadSet
