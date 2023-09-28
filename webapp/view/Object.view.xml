@@ -5,7 +5,8 @@
     xmlns:semantic="sap.f.semantic"
     xmlns:upload="sap.m.upload"
     xmlns:core="sap.ui.core"
-    xmlns:table="sap.ui.table">
+    xmlns:table="sap.ui.table"
+    xmlns:commons="sap.suite.ui.commons">
     <semantic:SemanticPage
         id="detailPage"
         headerPinnable="false"
@@ -80,7 +81,8 @@
                         </cells>
                     </ColumnListItem>
                     <ColumnListItem id="headerParameterSupportTeamStatic" 
-                            visible="{= ${runtimeModel>/editModeActive} ? false : ${SupportTeamBusinessPartner} ? true : false }">
+                            visible="{= ${runtimeModel>/editModeActive} ? false : ${SupportTeamBusinessPartner} === '0' ? false :
+                            ${SupportTeamBusinessPartner} ? true : false }">
                         <cells>
                             <Text text="{i18n>problemProcessorSupportTeamTitle}" id="problemSupportTeamTitleStatic"/>
                         </cells>
@@ -216,12 +218,12 @@
                                             <Text text="{CreatedAt}" width="100%" id="tableProblemDetailsFieldCreationDate" />
                                         </cells>
                                     </ColumnListItem>
-                                    <ColumnListItem id="tableProblemDetailsItemTotalProcTime">
+                                    <!-- <ColumnListItem id="tableProblemDetailsItemTotalProcTime">
                                         <cells>
                                             <Text text="{i18n>totalProcTimeTitle}" width="100%" id="tableProblemDetailsLabelTotalProcTime" />
                                             <Text width="100%" id="tableProblemDetailsFieldTotalProcTime" />
                                         </cells>
-                                    </ColumnListItem>
+                                    </ColumnListItem> -->
                                     <ColumnListItem id="tableProblemDetailsItemCloseDate" visible="{= ${Closed} ? true : false}">
                                         <cells>
                                             <Text text="{i18n>closeDateTitle}" width="100%" id="tableProblemDetailsLabelCloseDate" />
@@ -426,6 +428,221 @@
                                     </table:Column>
                                 </table:columns>
                             </table:TreeTable>
+                        </content>
+                    </IconTabFilter>
+                    <IconTabFilter id="tabProblemStatistics" icon="sap-icon://filter-analytics" tooltip="{i18n>problemStatistics}" text="{i18n>problemStatistics}">
+                        <content>
+                            <Panel expandable="true" width="auto" class="sapUiResponsiveMargin" expanded="true">
+                                <headerToolbar>
+                                    <OverflowToolbar style="Clear">
+                                        <Title text="{i18n>problemFlowWithDuration}" />
+                                        <ToolbarSpacer />
+                                    </OverflowToolbar>
+                                </headerToolbar>
+                                <content>
+                                    <commons:Timeline
+                            id="idTimeline"
+                            axisOrientation="Horizontal"
+                            enableDoubleSided="true"                           
+                            growingThreshold="0"
+                            sortOldestFirst="true"
+                            showHeaderBar="false"
+                            showTimeFilter="false"
+                            showItemFilter="false"
+                            groupBy="TimestampIn"
+                            content="{
+                                path: 'ProblemFlowStatistics',
+                                filters: [
+                                    {path: 'Status', operator: 'NotStartsWith', value1: 'TOT'} ]
+                            }">
+                                        <commons:content>
+                                            <commons:TimelineItem
+                                    id="idTemplateItem"                                   
+                                    dateTime="{TimestampIn}"
+                                    title="{StatusText}"
+                                    text="{
+                                           path: 'DurationInSeconds',
+                                           formatter: '.formatter.secondsParsedToDaysHoursMinutesSeconds'                                           
+
+                                    }"
+                                    userName="{= ${ProcessorName} ? ${ProcessorName} + ' / ' + ${SupportTeamName} : ' '}"
+                                    icon="{= ${IsCustomerActionStatus} ? 'sap-icon://customer' : 'sap-icon://headset'}"
+                                    status="{= ${IsCustomerActionStatus} ? 'Error' : 'Success'}"
+                                    >
+                            </commons:TimelineItem>
+                                        </commons:content>
+                                    </commons:Timeline>
+                                </content>
+                            </Panel>
+                            <Panel expandable="true" width="auto" class="sapUiResponsiveMargin" expanded="true">
+                                <headerToolbar>
+                                    <OverflowToolbar style="Clear">
+                                        <Title text="{i18n>problemTimeMeasurements}" />
+                                        <ToolbarSpacer />
+                                    </OverflowToolbar>
+                                </headerToolbar>
+                                <content>
+                                    <Table class="noColumnBorder sapUiMediumMarginTop" id="problemTimeMeasurementsTable" inset="false" width="50%"
+                                >
+                                        <columns>
+                                            <Column id="problemTimeMeasurementsTableLabel" width="40%" />
+                                            <Column id="problemTimeMeasurementsValue" width="60%" />
+                                        </columns>
+                                        <items>
+                                            <ColumnListItem id="problemTimeMeasurementsTableItemTotalProcessingTime">
+                                                <cells>
+                                                    <Text text="{i18n>totalProcTimeTitle}" id="problemTimeMeasurementsTableLabelTotalProcessingTime"  />
+                                                </cells>
+                                                <cells>
+                                                    <Text width="100%" id="problemTimeMeasurementsTableTotalProcTime" />
+                                                </cells>
+                                            </ColumnListItem>
+                                            <ColumnListItem id="problemTimeMeasurementsTableItemSLAMptSetup">
+                                                <cells>
+                                                    <Text text="{i18n>SLAMMptSetup}" width="100%" id="problemTimeMeasurementsTableItemSLAMptSetupLabel" />
+                                                    <Text text="{SLAMptDuration} {SLAMptDuraUnit}" width="100%" id="problemTimeMeasurementsTableItemSLAMptSetupValue" />
+                                                </cells>
+                                            </ColumnListItem>
+                                            <ColumnListItem id="problemTimeMeasurementsTableItemTotalResponseTime">
+                                                <cells>
+                                                    <Text text="{i18n>totalRespTimeTitle}" id="problemTimeMeasurementsTableLabelTotalResponseTime"  />
+                                                </cells>
+                                                <cells>
+                                                    <Text width="100%" id="problemTimeMeasurementsTableTotalResponseTime"/>
+                                                </cells>
+                                            </ColumnListItem>
+                                            <ColumnListItem id="problemTimeMeasurementsTableItemSLAIrtSetup">
+                                                <cells>
+                                                    <Text text="{i18n>SLAMIrtSetup}" width="100%" id="problemTimeMeasurementsTableItemSLAIrtSetupLabel" />
+                                                    <Text text="{SLAIrtDuration} {SLAIrtDuraUnit}" width="100%" id="problemTimeMeasurementsTableItemSLAIrtSetupValue" />
+                                                </cells>
+                                            </ColumnListItem>
+                                            <ColumnListItem id="problemTimeMeasurementsTableItemProblemSpentOnCustomerSide">
+                                                <cells>
+                                                    <Text text="{i18n>problemSpentOnCustomerSide}" id="problemTimeMeasurementsTableLabelProblemSpentOnCustomerSide" />
+                                                </cells>
+                                                <cells>
+                                                    <List items="{path: 'ProblemFlowStatistics', filters: {path: 'Status', operator: 'EQ', value1: 'TOTC'}}">
+                                                        <FeedListItem class="smallText"                              text="{
+                                                    path: 'DurationInSeconds',
+                                                    formatter: '.formatter.secondsParsedToDaysHoursMinutesSeconds'                                           
+         
+                                             }" showIcon="false" maxCharacters="100" />
+                                                    </List>
+                                                </cells>
+                                            </ColumnListItem>
+                                            <ColumnListItem id="problemTimeMeasurementsTableItemProblemSpentNotOnCustomerSide">
+                                                <cells>
+                                                    <Text text="{i18n>problemSpentNotOnCustomerSide}" id="problemTimeMeasurementsTableLabelProblemSpentNotOnCustomerSide" />
+                                                </cells>
+                                                <cells>
+                                                    <List items="{path: 'ProblemFlowStatistics', filters: {path: 'Status', operator: 'EQ', value1: 'TOTN'}}">
+                                                        <FeedListItem class="smallText"                              text="{
+                                                    path: 'DurationInSeconds',
+                                                    formatter: '.formatter.secondsParsedToDaysHoursMinutesSeconds'                                           
+         
+                                             }" showIcon="false" maxCharacters="100" />
+                                                    </List>
+                                                </cells>
+                                            </ColumnListItem>
+                                            <ColumnListItem id="problemTimeMeasurementsTableItemCreationDate">
+                                                <cells>
+                                                    <Text text="{i18n>creationDateTitle}" width="100%" id="problemTimeMeasurementsTableLabelCreationDate" />
+                                                    <Text text="{CreatedAt}" width="100%" id="problemTimeMeasurementsTableFieldCreationDate" />
+                                                </cells>
+                                            </ColumnListItem>
+                                            <ColumnListItem id="problemTimeMeasurementsTableItemFirstReaction" visible="{= ${FirstReactionDate} ? true : false}">
+                                                <cells>
+                                                    <Text text="{i18n>firstReactionTitle}" width="100%" id="problemTimeMeasurementsTableItemLabelFirstReaction" />
+                                                    <HBox id="problemTimeMeasurementsTableItemFirstReactionHBox">
+                                                        <Text text="{ path: 'FirstReactionDate', type: 'sap.ui.model.type.DateTime', formatOptions: { pattern: 'dd.MM.yyyy' }}" width="100%" id="problemTimeMeasurementsTableItemFieldFirstReactionDate"  />
+                                                        <Text text="{ path: 'FirstReactionTime', type: 'sap.ui.model.odata.type.Time', formatOptions: { pattern: 'HH:mm:ss' }}" width="100%" id="problemTimeMeasurementsTableItemFieldFirstReactionTime" class="sapUiTinyMarginBegin" />
+                                                    </HBox>
+                                                </cells>
+                                            </ColumnListItem>
+                                            <ColumnListItem id="problemTimeMeasurementsTableItemSLAIrtPerc">
+                                                <cells>
+                                                    <Text text="{i18n>SLAIrtPerc}" width="100%" id="problemTimeMeasurementsTableLabelSLAIrtPerc" />
+                                                    <HBox id="problemTimeMeasurementsTableItemSLAIrtHBox">
+                                                        <ObjectStatus 
+                                                text="{=  ${IrtSLAOnHold}  ? ${StoredSLAIrtPerc} : ${SLAIrtPerc} } %" 		
+                                                state="{= ${IrtSLAOnHold}  ? 'Information' : ${SLAIrtIconBsp} === 'NOTDUE' ? 'Success' : 'Error' }" 
+                                                icon="{= ${FirstReactionDate}  ? 'sap-icon://complete' : ${IrtSLAOnHold} ? 'sap-icon://pause' : 'sap-icon://pending' }"
+                                                id="problemTimeMeasurementsTableSLAIrtPercObjectStatus"/>
+                                                    </HBox>
+                                                </cells>
+                                            </ColumnListItem>
+                                            <ColumnListItem id="problemTimeMeasurementsTableItemCloseDate" visible="{= ${Closed} ? true : false}">
+                                                <cells>
+                                                    <Text text="{i18n>closeDateTitle}" width="100%" id="problemTimeMeasurementsTableLabelCloseDate" />
+                                                    <Text text="{ChangedAt}" width="100%" id="problemTimeMeasurementsTableFieldCloseDate" />
+                                                </cells>
+                                            </ColumnListItem>
+                                            <ColumnListItem id="problemTimeMeasurementsTableItemSLAMptPerc">
+                                                <cells>
+                                                    <Text text="{i18n>SLAMptPerc}" width="100%" id="problemTimeMeasurementsTableLabelSLAMptPerc" />
+                                                    <HBox id="problemTimeMeasurementsTableItemSLAMptHBox">
+                                                        <ObjectStatus								
+                                                text="{SLAMptPerc} %"			
+                                                state="{= ${MptSLAOnHold}  ? 'Information' : ${SLAMptIconBsp} === 'NOTDUE' ? 'Success' : 'Error' }" 
+                                                icon="{= ${Status} === 'E0008' || ${Status} === 'E0010'? 'sap-icon://complete' : ${MptSLAOnHold} ? 'sap-icon://pause' : 'sap-icon://pending' }"
+                                                id="problemTimeMeasurementsTableSLAMptPercObjectStatus"/>
+                                                    </HBox>
+                                                </cells>
+                                            </ColumnListItem>
+                                        </items>
+                                    </Table>
+                                </content>
+                            </Panel>
+                            <Panel expandable="true" width="auto" class="sapUiResponsiveMargin" expanded="true">
+                                <headerToolbar>
+                                    <OverflowToolbar style="Clear">
+                                        <Title text="{i18n>problemTimeMeasurementsPerProcessor}" />
+                                        <ToolbarSpacer />
+                                    </OverflowToolbar>
+                                </headerToolbar>
+                                <content>
+                                    <Table class="noColumnBorder sapUiMediumMarginTop" id="problemStatByProcessorTable" inset="false" width="80%"
+                            items="{
+                                      path: 'ProblemFlowStatistics',
+                                      filters: [
+                                          {path: 'Status', operator: 'StartsWith', value1: 'TOTP'},
+                                          {path: 'ProcessorName', operator: 'NE', value1: ''} ]
+                                  }">
+                                        <columns>
+                                            <Column id="problemStatByProcessorTableColumnProcessor" width="10%">
+                                                <Text text="{i18n>problemProcessorFullNameTitle}"  />
+                                            </Column>
+                                            <Column id="problemStatByProcessorTableColumnType" width="15%" >
+                                                <Text text="{i18n>timeDistribution}"  />
+                                            </Column>
+                                            <Column id="problemStatByProcessorTableColumnTime" width="20%" >
+                                                <Text text="{i18n>problemTimeMeasurements}"  />
+                                            </Column>
+                                        </columns>
+                                        <items>
+                                            <ColumnListItem id="problemStatByProcessorTableColumnProcessorItem">
+                                                <cells>
+                                                    <Text text="{
+                                                    path: 'ProcessorName'
+                                                }" />
+                                                </cells>
+                                                <cells>
+                                                    <Text 
+                                                    text="{= ${IsCustomerActionStatus} ? ${i18n>problemSpentOnCustomerSide} : ${i18n>problemSpentNotOnCustomerSide}}"
+                                                    id="problemStatByProcessorTableColumnTypeItem"  />
+                                                </cells>
+                                                <cells>
+                                                    <Text text="{
+                                                path: 'DurationInSeconds',
+                                                formatter: '.formatter.secondsParsedToDaysHoursMinutesSeconds' }"  
+                                                id="problemStatByProcessorTableColumnTimeItem"  />
+                                                </cells>
+                                            </ColumnListItem>
+                                        </items>
+                                    </Table>
+                                </content>
+                            </Panel>
                         </content>
                     </IconTabFilter>
                 </items>

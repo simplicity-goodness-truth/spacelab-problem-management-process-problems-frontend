@@ -73,8 +73,7 @@
       "": {
         "dataSource": "mainService",
         "preload": true,
-        "settings": {
-          "defaultCountMode": "None"  
+        "settings": {         
         }
       }
     },
