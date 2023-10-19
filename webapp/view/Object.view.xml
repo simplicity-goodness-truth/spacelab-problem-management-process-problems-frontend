@@ -328,7 +328,7 @@
                                     visible="{= ${runtimeModel>/editModeActive} ? true: false }" placeholder="{i18n>enterReplyText}" liveChange="onChangeTextArea"/>
                                 <List id="textsList" showSeparators="Inner" busyIndicatorDelay="0" items="{path: 'Text'}" updateFinished="onTextsLoaded">
                                     <FeedListItem id="communicationItem" iconDensityAware="false" showIcon="false" 
-                                        info="{TdidTxt}" timestamp="{ path: 'DateTimeText', type: 'sap.ui.model.type.DateTime', formatOptions: { pattern: 'dd.MM.yyyy HH:mm:ss' }}" text="{TextString}" sender="{UserText}" />
+                                        info="{TdidTxt}" timestamp="{ path: 'DateTimeText', type: 'sap.ui.model.type.DateTime', formatOptions: { pattern: 'dd.MM.yyyy HH:mm:ss' }}" text="{TextString}" sender="{UserText}" senderActive="false" />
                                 </List>
                             </VBox>
                         </content>
