@@ -29,7 +29,7 @@ items="{
                     <Text text="{i18n>SLAIrtTimestamp}" id="SLAIrtTimestampLabel"/>
                 </Column>
                 <Column id="IrtPercent">
-                    <Text text="{i18n>SLAIrtPercent}" id="SLAIrtPercentLabel"/>
+                    <Text text="{i18n>SLAIrtPerc}" id="SLAIrtPercentLabel"/>
                 </Column>
                 <Column id="UserName">
                     <Text text="{i18n>userName}" id="UserNameLabel"/>

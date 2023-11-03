@@ -308,7 +308,7 @@
                                             <Text text="{i18n>SLAMptPerc}" width="100%" id="tableProblemDetailsLabelSLAMptPerc" />
                                             <HBox id="tableProblemDetailsItemSLAMptHBox">
                                                 <ObjectStatus								
-                                                text="{SLAMptPerc} %"			
+                                                text="{=  ${MptSLAOnHold}  ? ${StoredSLAMptPerc} : ${SLAMptPerc} } %"				
                                                 state="{= ${MptSLAOnHold}  ? 'Information' : ${SLAMptIconBsp} === 'NOTDUE' ? 'Success' : 'Error' }" 
                                                 icon="{= ${Status} === 'E0008' || ${Status} === 'E0010'? 'sap-icon://complete' : ${MptSLAOnHold} ? 'sap-icon://pause' : 'sap-icon://pending' }"
                                                 id="SLAMptPercObjectStatus"/>
