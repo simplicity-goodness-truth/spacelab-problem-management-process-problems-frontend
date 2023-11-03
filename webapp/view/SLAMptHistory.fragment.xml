@@ -38,7 +38,7 @@ items="{
     </Column>
 
     <Column id="MptPercent">
-        <Text text="{i18n>SLAMptPercent}" id="SLAMptPercentLabel"/>
+        <Text text="{i18n>SLAMptPerc}" id="SLAMptPercentLabel"/>
     </Column>
     <Column id="UserName">
         <Text text="{i18n>userName}" id="UserNameLabel"/>
