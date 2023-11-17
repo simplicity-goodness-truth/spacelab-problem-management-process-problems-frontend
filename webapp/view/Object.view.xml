@@ -127,6 +127,8 @@
                                 state="{= ${CreatedInternally} ? 'Success' : 'Error' }" 
                                 icon="{= ${CreatedInternally} ? 'sap-icon://headset' : 'sap-icon://customer' }"
                                 id="CreatedInternallyObjectStatus" />
+                            <ObjectStatus icon="sap-icon://compare"  state="Error" visible="{= ${IsDisputeOpen} ? true : false }" id="disputeOpenIcon" 
+                                press="onPressDisputeOpenIcon" active="true"/>
                         </cells>
                         <cells>
                             <Text id="dummySpacer6" visible="false" />
@@ -657,6 +659,10 @@
             id="buttonProcessorTakeOver"   visible="{ProcessorTakeOverEnabled}" icon="sap-icon://add"/>
             <Button text="{i18n>buttonProcessorReturnFromWithdrawal}" press="onPressReturnFromWithdrawal" id="buttonProcessorReturnFromWithdrawal"  icon="sap-icon://undo"  
                 visible="{ProcessorReturnFromWithdrawal}"/>
+            <Button text="{i18n>buttonProcessorOpenDispute}" press="onPressProcessorOpenDispute"
+                    id="buttonProcessorOpenDispute" visible="{ProcessorOpenDisputeEnabled}" icon="sap-icon://compare"/>
+            <Button text="{i18n>buttonProcessorCloseDispute}" press="onPressProcessorCloseDispute"
+                    id="buttonProcessorCloseDispute" visible="{ProcessorCloseDisputeEnabled}" icon="sap-icon://decision"/>
         </semantic:titleCustomTextActions>
         <semantic:footerCustomActions>
             <Button text="{i18n>buttonSave}" press="onPressProcessorSave" id="buttonSave" icon="sap-icon://save" />

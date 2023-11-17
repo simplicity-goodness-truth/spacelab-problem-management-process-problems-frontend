@@ -115,12 +115,48 @@ sap.ui.define([
 
             // Filling statuses with possible processor change
 
-            this.statusesWithPossibleProccessorChange = Object.freeze(this._setStatusesWithPossibleProccessorChangeConstants());            
+            this.statusesWithPossibleProccessorChange = Object.freeze(this._setStatusesWithPossibleProccessorChangeConstants());
 
         },
         /* =========================================================== */
         /* event handlers                                              */
         /* =========================================================== */
+
+        /**
+        * Processor pressed a dispute history icon
+        */
+        onPressDisputeOpenIcon: function () {
+
+            this._openDisputeHistoryDialog();
+
+        },
+
+        /**
+        * Closing a dispute history 
+        */
+        onCloseDisputeHistoryDialog: function () {
+
+            this._destroyDisputeHistoryDialog();
+
+        },
+
+        /**
+        * Processor pressed a button to open a dispute
+        */
+        onPressProcessorOpenDispute: function () {
+
+            this._openProblemDispute();
+
+        },
+
+        /**
+        * Processor pressed a button to close a dispute
+        */
+        onPressProcessorCloseDispute: function () {
+
+            this._closeProblemDispute();
+
+        },
 
         /**
         * Support team change in processor search dialog
@@ -486,6 +522,102 @@ sap.ui.define([
         /* internal methods                                            */
         /* =========================================================== */
 
+        /**
+        * Get Dispute History from backend
+        */
+        _setDisputeHistory: function () {
+
+            var t = this,
+                sErroneousExecutionText = this.getResourceBundle().getText("oDataModelReadFailure");
+
+            sharedLibrary.readEntitiesAssoiciationByEdmGuidKey("Problem", this.Guid, "DisputeHistory",
+                sErroneousExecutionText, this, false, false, function (oData) {
+
+                    t.oDisputeHistory = oData.results;
+
+                });
+        },
+
+        /*
+        * Open problem dispute dialog     
+        */
+        _openDisputeHistoryDialog: function () {
+
+
+            var t = this;
+
+            this._setDisputeHistory();
+
+            this.oDisputeHistoryFragment = sap.ui.xmlfragment("yslpmprprb.view.DisputeHistory", this);
+
+            this.getView().addDependent(this.oDisputeHistoryFragment);
+
+            this.oDisputeHistoryFragment.open();
+
+            var oDisputeHistory = new sap.ui.model.json.JSONModel({
+
+                DisputeHistoryList: t.oDisputeHistory
+
+            });
+
+            sap.ui.getCore().byId("DisputeHistoryTable").setModel(oDisputeHistory, "DisputeHistoryModel");
+
+        },
+
+        /*
+        * Open problem dispute     
+        */
+        _openProblemDispute: function () {
+
+            var t = this,
+                sText = this.getResourceBundle().getText("confirmDisputeOpening");
+
+            sharedLibrary.confirmAction(sText, function () {
+
+                sharedLibrary.callFunctionImport(
+                    'openProblemDispute',
+                    t.getResourceBundle().getText("problemUpdateFailure"),
+                    t,
+                    'GET',
+                    { 'Guid': t.Guid },
+                    true,
+                    function (response) {
+
+                        t._refreshApplicationAndSwitchOffEditMode();
+
+                    }
+                );
+
+            });
+        },
+
+        /*
+        * Close problem dispute     
+        */
+        _closeProblemDispute: function () {
+
+            var t = this,
+                sText = this.getResourceBundle().getText("confirmDisputeClosing");
+
+            sharedLibrary.confirmAction(sText, function () {
+
+                sharedLibrary.callFunctionImport(
+                    'closeProblemDispute',
+                    t.getResourceBundle().getText("problemUpdateFailure"),
+                    t,
+                    'GET',
+                    { 'Guid': t.Guid },
+                    true,
+                    function (response) {
+
+                        t._refreshApplicationAndSwitchOffEditMode();
+
+                    }
+                );
+
+            });
+        },
+
         /*
         * Set statuses with possible processor change
         */
@@ -803,60 +935,60 @@ sap.ui.define([
 
         },
 
-            /*
-        * Set total processing time value
-        */
+        /*
+    * Set total processing time value
+    */
 
-            _setTotalProcessingTimeValue: function () {
+        _setTotalProcessingTimeValue: function () {
 
-                //  var sProcTimeText;
-     
-                 if (this.TotalProcessingTimeInMinutes > 0) {
-     
-                     // var totalProcessingTimeHours = Math.floor(this.TotalProcessingTimeInMinutes / 60),
-                     //     totalProcessingTimeMinutes = this.TotalProcessingTimeInMinutes % 60;
-     
-                     // sProcTimeText = totalProcessingTimeHours + " " + this.getResourceBundle().getText("hours") + " " +
-                     //     totalProcessingTimeMinutes + " " + this.getResourceBundle().getText("minutes");
-     
-                     // Setting processing time for statistics
-     
-                     var t = this;
-     
-                     this.byId("problemTimeMeasurementsTableTotalProcTime").setText(
-                         t.formatter.secondsParsedToDaysHoursMinutesSeconds(t.TotalProcessingTimeInMinutes * 60, t)
-                     );
-     
-                 } 
-                 
-                 // else {
-                 //     sProcTimeText = "0" + " " + this.getResourceBundle().getText("hours") + " " +
-                 //         "0" + " " + this.getResourceBundle().getText("minutes");
-                 // }
-     
-                // this.byId("tableProblemDetailsFieldTotalProcTime").setText(sProcTimeText);
-     
-             },
-     
-             /*
-            * Set total response time value
-            */
-     
-             _setTotalResponseTimeValue: function () {
-     
-                 if (this.TotalResponseTimeInMinutes > 0) {
-     
-                     // Setting processing time for statistics
-     
-                     var t = this;
-     
-                     this.byId("problemTimeMeasurementsTableTotalResponseTime").setText(
-                         t.formatter.secondsParsedToDaysHoursMinutesSeconds(t.TotalResponseTimeInMinutes * 60, t)
-                     );
-     
-                 } 
-     
-             },
+            //  var sProcTimeText;
+
+            if (this.TotalProcessingTimeInMinutes > 0) {
+
+                // var totalProcessingTimeHours = Math.floor(this.TotalProcessingTimeInMinutes / 60),
+                //     totalProcessingTimeMinutes = this.TotalProcessingTimeInMinutes % 60;
+
+                // sProcTimeText = totalProcessingTimeHours + " " + this.getResourceBundle().getText("hours") + " " +
+                //     totalProcessingTimeMinutes + " " + this.getResourceBundle().getText("minutes");
+
+                // Setting processing time for statistics
+
+                var t = this;
+
+                this.byId("problemTimeMeasurementsTableTotalProcTime").setText(
+                    t.formatter.secondsParsedToDaysHoursMinutesSeconds(t.TotalProcessingTimeInMinutes * 60, t)
+                );
+
+            }
+
+            // else {
+            //     sProcTimeText = "0" + " " + this.getResourceBundle().getText("hours") + " " +
+            //         "0" + " " + this.getResourceBundle().getText("minutes");
+            // }
+
+            // this.byId("tableProblemDetailsFieldTotalProcTime").setText(sProcTimeText);
+
+        },
+
+        /*
+       * Set total response time value
+       */
+
+        _setTotalResponseTimeValue: function () {
+
+            if (this.TotalResponseTimeInMinutes > 0) {
+
+                // Setting processing time for statistics
+
+                var t = this;
+
+                this.byId("problemTimeMeasurementsTableTotalResponseTime").setText(
+                    t.formatter.secondsParsedToDaysHoursMinutesSeconds(t.TotalResponseTimeInMinutes * 60, t)
+                );
+
+            }
+
+        },
 
         /*
         * Disable drag and drop function for UploadSet
@@ -1107,7 +1239,7 @@ sap.ui.define([
 
             for (var key1 in t.statusNames) {
 
-                if (sStatusCode == t.statusNames[key1]) {                    
+                if (sStatusCode == t.statusNames[key1]) {
 
                     if (t.statusesWithPossibleProccessorChange.statuses.includes(key1)) {
 
@@ -1331,6 +1463,14 @@ sap.ui.define([
 
                     });
             });
+        },
+
+        /**
+        * Destroy Dispute History dialog
+        */
+        _destroyDisputeHistoryDialog: function () {
+
+            this.oDisputeHistoryFragment.destroy(true);
         },
 
         /**
