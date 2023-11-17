@@ -123,6 +123,42 @@ sap.ui.define([
         /* =========================================================== */
 
         /**
+        * Processor pressed a dispute history icon
+        */
+        onPressDisputeOpenIcon: function () {
+
+            this._openDisputeHistoryDialog();
+
+        },
+
+        /**
+        * Closing a dispute history 
+        */
+        onCloseDisputeHistoryDialog: function () {
+
+            this._destroyDisputeHistoryDialog();
+
+        },
+
+        /**
+        * Processor pressed a button to open a dispute
+        */
+        onPressProcessorOpenDispute: function () {
+
+            this._openProblemDispute();
+
+        },
+
+        /**
+        * Processor pressed a button to close a dispute
+        */
+        onPressProcessorCloseDispute: function () {
+
+            this._closeProblemDispute();
+
+        },
+
+        /**
         * Support team change in processor search dialog
         */
         onChangeSupportTeamSelect: function (oEvent) {
@@ -486,6 +522,102 @@ sap.ui.define([
         /* internal methods                                            */
         /* =========================================================== */
 
+        /**
+        * Get Dispute History from backend
+        */
+        _setDisputeHistory: function () {
+
+            var t = this,
+                sErroneousExecutionText = this.getResourceBundle().getText("oDataModelReadFailure");
+
+            sharedLibrary.readEntitiesAssoiciationByEdmGuidKey("Problem", this.Guid, "DisputeHistory",
+                sErroneousExecutionText, this, false, false, function (oData) {
+
+                    t.oDisputeHistory = oData.results;
+
+                });
+        },
+
+        /*
+        * Open problem dispute dialog     
+        */
+        _openDisputeHistoryDialog: function () {
+
+
+            var t = this;
+
+            this._setDisputeHistory();
+
+            this.oDisputeHistoryFragment = sap.ui.xmlfragment("zslpmprprb.view.DisputeHistory", this);
+
+            this.getView().addDependent(this.oDisputeHistoryFragment);
+
+            this.oDisputeHistoryFragment.open();
+
+            var oDisputeHistory = new sap.ui.model.json.JSONModel({
+
+                DisputeHistoryList: t.oDisputeHistory
+
+            });
+
+            sap.ui.getCore().byId("DisputeHistoryTable").setModel(oDisputeHistory, "DisputeHistoryModel");
+
+        },
+
+        /*
+        * Open problem dispute     
+        */
+        _openProblemDispute: function () {
+
+            var t = this,
+                sText = this.getResourceBundle().getText("confirmDisputeOpening");
+
+            sharedLibrary.confirmAction(sText, function () {
+
+                sharedLibrary.callFunctionImport(
+                    'openProblemDispute',
+                    t.getResourceBundle().getText("problemUpdateFailure"),
+                    t,
+                    'GET',
+                    { 'Guid': t.Guid },
+                    true,
+                    function (response) {
+
+                        t._refreshApplicationAndSwitchOffEditMode();
+
+                    }
+                );
+
+            });
+        },
+
+        /*
+        * Close problem dispute     
+        */
+        _closeProblemDispute: function () {
+
+            var t = this,
+                sText = this.getResourceBundle().getText("confirmDisputeClosing");
+
+            sharedLibrary.confirmAction(sText, function () {
+
+                sharedLibrary.callFunctionImport(
+                    'closeProblemDispute',
+                    t.getResourceBundle().getText("problemUpdateFailure"),
+                    t,
+                    'GET',
+                    { 'Guid': t.Guid },
+                    true,
+                    function (response) {
+
+                        t._refreshApplicationAndSwitchOffEditMode();
+
+                    }
+                );
+
+            });
+        },
+
         /*
         * Set statuses with possible processor change
         */
@@ -811,7 +943,7 @@ sap.ui.define([
 
         _setTotalProcessingTimeValue: function () {
 
-           //  var sProcTimeText;
+            //  var sProcTimeText;
 
             if (this.TotalProcessingTimeInMinutes > 0) {
 
@@ -829,14 +961,14 @@ sap.ui.define([
                     t.formatter.secondsParsedToDaysHoursMinutesSeconds(t.TotalProcessingTimeInMinutes * 60, t)
                 );
 
-            } 
-            
+            }
+
             // else {
             //     sProcTimeText = "0" + " " + this.getResourceBundle().getText("hours") + " " +
             //         "0" + " " + this.getResourceBundle().getText("minutes");
             // }
 
-           // this.byId("tableProblemDetailsFieldTotalProcTime").setText(sProcTimeText);
+            // this.byId("tableProblemDetailsFieldTotalProcTime").setText(sProcTimeText);
 
         },
 
@@ -856,7 +988,7 @@ sap.ui.define([
                     t.formatter.secondsParsedToDaysHoursMinutesSeconds(t.TotalResponseTimeInMinutes * 60, t)
                 );
 
-            } 
+            }
 
         },
 
@@ -1333,6 +1465,14 @@ sap.ui.define([
 
                     });
             });
+        },
+
+        /**
+        * Destroy Dispute History dialog
+        */
+        _destroyDisputeHistoryDialog: function () {
+
+            this.oDisputeHistoryFragment.destroy(true);
         },
 
         /**
