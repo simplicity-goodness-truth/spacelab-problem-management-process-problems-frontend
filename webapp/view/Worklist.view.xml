@@ -172,7 +172,8 @@ xmlns:fb="sap.ui.comp.filterbar" xmlns:core="sap.ui.core" height="90%">
 						<cells>
 							<core:Icon
 							src="sap-icon://compare"                                
-							color="#FF0000" visible="{= ${IsDisputeOpen} ? true : false }" />
+							color="{= ${DisputeStatus} === 'O' ? '#FF0000' : '#000000'}" 
+							visible="{= ${DisputeStatus} !== '' ? true : false }" />
 						</cells>
 						<cells>
 							<ObjectStatus

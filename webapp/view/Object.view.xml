@@ -127,7 +127,8 @@
                                 state="{= ${CreatedInternally} ? 'Success' : 'Error' }" 
                                 icon="{= ${CreatedInternally} ? 'sap-icon://headset' : 'sap-icon://customer' }"
                                 id="CreatedInternallyObjectStatus" />
-                            <ObjectStatus icon="sap-icon://compare"  state="Error" visible="{= ${IsDisputeOpen} ? true : false }" id="disputeOpenIcon" 
+                            <ObjectStatus icon="sap-icon://compare"  state="{= ${DisputeStatus} === 'O' ? 'Error' : 'None' }" 
+                            visible="{= ${DisputeStatus} !== '' ? true : false }" id="disputeOpenIcon" 
                                 press="onPressDisputeOpenIcon" active="true"/>
                         </cells>
                         <cells>
